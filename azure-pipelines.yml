@@ -10,11 +10,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: GitDownloader@0
-  inputs:
-    RepositoryUrl: 'https://github.com/microsoft/llvm-mctoll'
-    RepositoryPath: 'llvm/tools'
-    BranchTag: 'master'
 - task: Bash@3
   inputs:
     targetType: 'inline'
@@ -24,5 +19,6 @@ steps:
       echo 'Hello world'
       ls -la
       ls -la llvm/tools
+      pushd llvm/tools && git clone https://github.com/microsoft/llvm-mctoll && ls -la && popd
       pwd
 
