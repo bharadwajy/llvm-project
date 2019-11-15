@@ -17,4 +17,5 @@ steps:
       # Write your commands here
       
       echo 'Hello world'
+      cd llvm-project
       pwd
