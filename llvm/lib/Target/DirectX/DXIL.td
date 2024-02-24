@@ -92,6 +92,27 @@ class DXILOperation<string name, int opCode, DXILOpClass opClass, DXILOpCategory
   let StatsGroup = statsGroup;
 }
 
+// Various properties specific to DXIL Operation
+def IsDerivative : IntrinsicProperty;
+def IsGradient : IntrinsicProperty;
+def IsFeedback : IntrinsicProperty;
+def IsWave : IntrinsicProperty;
+def NeedsUniformInputs : IntrinsicProperty;
+
+class DXILOperationNew<string opName,
+                      int opCode,
+                      list<LLVMType> retTypes,
+                      list<LLVMType> paramTypes = [],
+                      list<IntrinsicProperty> opProperties = [],
+                      Intrinsic llvmIntrinsic>  {
+    string OpName = opName;                               // Name of DXIL operation
+    int Opcode = opCode;                                // Unique non-negative integer associated with the operation
+    list<LLVMType> RetTypes = retTypes;     // Overloaded return types
+    list<LLVMType> ParamTypes = paramTypes; // Parameter types
+    list<IntrinsicProperty> OpProperties = opProperties; // Properties of DXIL Operation
+    Intrinsic LLVMIntrinsic = llvmIntrinsic; // LLVM intrinsic the DXIL operation maps to
+}
+
 // LLVM intrinsic that DXIL operation maps to.
 class LLVMIntrinsic<Intrinsic llvm_intrinsic_> { Intrinsic llvm_intrinsic = llvm_intrinsic_; }
 
@@ -148,3 +169,14 @@ def FlattenedThreadIdInGroup : DXILOperation< "FlattenedThreadIdInGroup", 96, Fl
     DXILOpParameter<1, llvm_i32_ty, "opcode", "DXIL opcode">
   ]>,
   LLVMIntrinsic<int_dx_flattened_thread_id_in_group>;
+
+// Abstraction DXIL Operation opcode to LLVM intrinsic
+class DXILOpMapping<int opCode, Intrinsic intrinsic, DXILOpCategory category, string doc> {
+  int OpCode = opCode;                 // Opcode corresponding to DXIL Operation
+  Intrinsic LLVMIntrinsic = intrinsic; // LLVM Intrinsic the DXIL Operation maps to
+  string Doc = doc;                    // a short description of the operation
+  DXILOpCategory OpCategory = category;// Category of the operation (Is this really needed??)
+}
+
+def ThreadId_New : DXILOpMapping<93, int_dx_thread_id, ComputeIDCategory, "Reads the thread ID">;
+def GroupId_New  : DXILOpMapping<94, int_dx_group_id, ComputeIDCategory, "Reads the group ID (SV_GroupID)">;
