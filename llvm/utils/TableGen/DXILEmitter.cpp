@@ -50,7 +50,7 @@ struct DXILOperationDesc {
 
   SmallVector<DXILParameter> Params; // the operands that this instruction takes
   SmallVector<ParameterKind> OverloadTypes; // overload types if applicable
-  StringRef Attr; // operation attribute; reference to string representation
+  std::string Attr; // operation attribute; reference to string representation
                   // of llvm::Attribute::AttrKind
   StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
                         // means no map exists
@@ -133,7 +133,7 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     Record *R = OverloadTypeList->getElementAsRecord(I);
     OverloadTypes.emplace_back(lookupParameterKind(R->getNameInitAsString()));
   }
-  Attr = StringRef(R->getValue("Attribute")->getNameInitAsString());
+  Attr = R->getValue("Attribute")->getValue()->getAsString();
 }
 
 DXILParameter::DXILParameter(const Record *R) {
