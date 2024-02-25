@@ -209,11 +209,13 @@ DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
     // DXIL Operation are the same as that of the intrinsic. Deviations
     // are expected to be encoded in TableGen record specification and
     // handled accordingly here. Support to be added later.
-    // Get parameter type list of the intrinsic.
-    auto TypeList = IntrinsicDef->getValueAsListInit("ParamTypes");
-    unsigned ListSize = TypeList->size();
+    // Get parameter type list of the intrinsic. Types attribute contains
+    // the list of as [returnType, param1Type,, param2Type, ...]
+    auto TypeList = IntrinsicDef->getValueAsListInit("Types");
+    unsigned TypeListSize = TypeList->size();
     OverloadParamIndex = -1;
-    for (unsigned i = 0; i < ListSize; i++) {
+    // As parameter types are being considered, skip return type
+    for (unsigned i = 1; i < TypeListSize; i++) {
         OpTypeNames.emplace_back(TypeList->getElement(i)->getAsString());
         // TODO: Clean this up - do we need OverloadParamIndex at all??
         // Ignore return type
@@ -225,10 +227,13 @@ DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
         }
     }
     // Determine the operation class (unary/binary) based on the number of parameters
-    auto ParamSize = IntrinsicDef->getValueAsListInit("ParamTypes")->size();
-    if (ParamSize == 1) {
+    // As parameter types are being considered, skip return type
+    auto ParamSize = TypeListSize  - 1;
+    if (ParamSize == 0) {
+      OpClass = "Nullary";
+    } else    if (ParamSize == 1) {
       OpClass = "Unary";
-    } else if (ListSize == 2) {
+    } else if (ParamSize == 2) {
       OpClass = "Binary";
     } else {
       // TODO: Extend as needed
@@ -238,8 +243,8 @@ DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
     // that of the intrinsic. Deviations are expected to be encoded in TableGen
     // record specification and handled accordingly here. Support to be added later.
     auto IntrPropList = IntrinsicDef->getValueAsListInit("IntrProperties");
-    ListSize = IntrPropList->size();
-    for (unsigned i = 0; i < ListSize; i++) {
+    auto IntrPropListSize = IntrPropList->size();
+    for (unsigned i = 0; i < IntrPropListSize; i++) {
         OpAttributes.emplace_back(IntrPropList->getElement(i)->getAsString());
     }
   }
@@ -576,9 +581,12 @@ static std::string emitTypesAsOverloadKindStr(SmallVector<std::string> OpTypeStr
   auto It = OpTypeStrVec.begin();
   std::string Result;
   raw_string_ostream OS(Result);
-  OS << emitOverloadKindStr(*It);
-  for (++It; It != OpTypeStrVec.end(); ++It) {
-    OS << ", " << emitOverloadKindStr(*It);
+  // Traverse a non-empty vector
+  if (It != OpTypeStrVec.end()) {
+    OS << emitOverloadKindStr(*It);
+    for (++It; It != OpTypeStrVec.end(); ++It) {
+      OS << ", " << emitOverloadKindStr(*It);
+    }
   }
   return OS.str();
 
@@ -829,15 +837,15 @@ static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
     DXILOps.emplace_back(DXILOperationDesc(Record));
   }
 
-  OS << "#ifdef DXIL_OP_ENUM\n";
+  OS << "#ifdef DXIL_OP_ENUM_OLD\n";
   emitDXILEnums(DXILOps, OS);
   OS << "#endif\n\n";
 
-  OS << "#ifdef DXIL_OP_INTRINSIC_MAP\n";
+  OS << "#ifdef DXIL_OP_INTRINSIC_MAP_OLD\n";
   emitDXILIntrinsicMap(DXILOps, OS);
   OS << "#endif\n\n";
 
-  OS << "#ifdef DXIL_OP_OPERATION_TABLE\n";
+  OS << "#ifdef DXIL_OP_OPERATION_TABLE_OLD\n";
   emitDXILOperationTable(DXILOps, OS);
   OS << "#endif\n\n";
 
@@ -850,13 +858,13 @@ static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
   for (auto *Record : OpIntrMaps) {
     DXILOpsNew.emplace_back(DXILOperationDescNew(Record));
   }
-  OS << "#ifdef DXIL_OP_ENUM_NEW\n";
+  OS << "#ifdef DXIL_OP_ENUM\n";
   emitDXILEnumsNew(DXILOpsNew, OS);
   OS << "#endif\n\n";
-  OS << "#ifdef DXIL_OP_INTRINSIC_MAP_NEW\n";
+  OS << "#ifdef DXIL_OP_INTRINSIC_MAP\n";
   emitDXILIntrinsicMapNew(DXILOpsNew, OS);
   OS << "#endif\n\n";
-  OS << "#ifdef DXIL_OP_OPERATION_TABLE_NEW\n";
+  OS << "#ifdef DXIL_OP_OPERATION_TABLE\n";
   emitDXILOperationTableNew(DXILOpsNew, OS);
   OS << "#endif\n\n";
 #endif

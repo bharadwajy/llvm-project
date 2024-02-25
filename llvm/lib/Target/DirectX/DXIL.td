@@ -178,5 +178,11 @@ class DXILOpMapping<int opCode, Intrinsic intrinsic, DXILOpCategory category, st
   DXILOpCategory OpCategory = category;// Category of the operation (Is this really needed??)
 }
 
+def Sin_New      : DXILOpMapping<13, int_sin, UnaryFloatCategory, "Returns sine(theta) for theta in radians.">;
+def UMax_New     : DXILOpMapping<39, int_umax, BinaryUintCategory, "Unsigned integer maximum. UMax(a,b) = a > b ? a : b">;
 def ThreadId_New : DXILOpMapping<93, int_dx_thread_id, ComputeIDCategory, "Reads the thread ID">;
 def GroupId_New  : DXILOpMapping<94, int_dx_group_id, ComputeIDCategory, "Reads the group ID (SV_GroupID)">;
+def ThreadIdInGroup_New : DXILOpMapping<95, int_dx_thread_id_in_group, ComputeIDCategory,
+                                    "Reads the thread ID within the group (SV_GroupThreadID)">;
+def FlattenedThreadIdInGroup_New : DXILOpMapping<96, int_dx_flattened_thread_id_in_group, ComputeIDCategory,
+                                    "Provides a flattened index for a given thread within a given group (SV_GroupIndex)">;
