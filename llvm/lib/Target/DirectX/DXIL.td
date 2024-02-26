@@ -116,7 +116,7 @@ class DXILOperationNew<string opName,
 // LLVM intrinsic that DXIL operation maps to.
 class LLVMIntrinsic<Intrinsic llvm_intrinsic_> { Intrinsic llvm_intrinsic = llvm_intrinsic_; }
 
-def Sin : DXILOperation<"Sin", 13, UnaryClass, UnaryFloatCategory, "returns sine(theta) for theta in radians.",
+def Sin_old : DXILOperation<"Sin", 13, UnaryClass, UnaryFloatCategory, "returns sine(theta) for theta in radians.",
   [llvm_half_ty, llvm_float_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_anyfloat_ty, "", "operation result">,
@@ -126,7 +126,7 @@ def Sin : DXILOperation<"Sin", 13, UnaryClass, UnaryFloatCategory, "returns sine
   ["floats"]>,
   LLVMIntrinsic<int_sin>;
 
-def UMax : DXILOperation< "UMax", 39, BinaryClass, BinaryUintCategory, "unsigned integer maximum. UMax(a,b) = a > b ? a : b",
+def UMax_old : DXILOperation< "UMax", 39, BinaryClass, BinaryUintCategory, "unsigned integer maximum. UMax(a,b) = a > b ? a : b",
     [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_anyint_ty, "", "operation result">,
@@ -137,7 +137,7 @@ def UMax : DXILOperation< "UMax", 39, BinaryClass, BinaryUintCategory, "unsigned
   ["uints"]>,
   LLVMIntrinsic<int_umax>;
 
-def ThreadId : DXILOperation< "ThreadId", 93, ThreadIdClass, ComputeIDCategory, "reads the thread ID", [llvm_i32_ty], ReadNone,
+def ThreadId_old : DXILOperation< "ThreadId", 93, ThreadIdClass, ComputeIDCategory, "reads the thread ID", [llvm_i32_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_i32_ty, "", "thread ID component">,
     DXILOpParameter<1, llvm_i32_ty, "opcode", "DXIL opcode">,
@@ -145,7 +145,7 @@ def ThreadId : DXILOperation< "ThreadId", 93, ThreadIdClass, ComputeIDCategory, 
   ]>,
   LLVMIntrinsic<int_dx_thread_id>;
 
-def GroupId : DXILOperation< "GroupId", 94, GroupIdClass, ComputeIDCategory, "reads the group ID (SV_GroupID)", [llvm_i32_ty], ReadNone,
+def GroupId_old : DXILOperation< "GroupId", 94, GroupIdClass, ComputeIDCategory, "reads the group ID (SV_GroupID)", [llvm_i32_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_i32_ty, "", "group ID component">,
     DXILOpParameter<1, llvm_i32_ty, "opcode", "DXIL opcode">,
@@ -153,7 +153,7 @@ def GroupId : DXILOperation< "GroupId", 94, GroupIdClass, ComputeIDCategory, "re
   ]>,
   LLVMIntrinsic<int_dx_group_id>;
 
-def ThreadIdInGroup : DXILOperation< "ThreadIdInGroup", 95, ThreadIdInGroupClass, ComputeIDCategory,
+def ThreadIdInGroup_old : DXILOperation< "ThreadIdInGroup", 95, ThreadIdInGroupClass, ComputeIDCategory,
   "reads the thread ID within the group (SV_GroupThreadID)", [llvm_i32_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_i32_ty, "", "thread ID in group component">,
@@ -162,7 +162,7 @@ def ThreadIdInGroup : DXILOperation< "ThreadIdInGroup", 95, ThreadIdInGroupClass
   ]>,
   LLVMIntrinsic<int_dx_thread_id_in_group>;
 
-def FlattenedThreadIdInGroup : DXILOperation< "FlattenedThreadIdInGroup", 96, FlattenedThreadIdInGroupClass, ComputeIDCategory,
+def FlattenedThreadIdInGroup_old : DXILOperation< "FlattenedThreadIdInGroup", 96, FlattenedThreadIdInGroupClass, ComputeIDCategory,
    "provides a flattened index for a given thread within a given group (SV_GroupIndex)", [llvm_i32_ty], ReadNone,
   [
     DXILOpParameter<0, llvm_i32_ty, "", "result">,
@@ -178,11 +178,11 @@ class DXILOpMapping<int opCode, Intrinsic intrinsic, DXILOpCategory category, st
   DXILOpCategory OpCategory = category;// Category of the operation (Is this really needed??)
 }
 
-def Sin_New      : DXILOpMapping<13, int_sin, UnaryFloatCategory, "Returns sine(theta) for theta in radians.">;
-def UMax_New     : DXILOpMapping<39, int_umax, BinaryUintCategory, "Unsigned integer maximum. UMax(a,b) = a > b ? a : b">;
-def ThreadId_New : DXILOpMapping<93, int_dx_thread_id, ComputeIDCategory, "Reads the thread ID">;
-def GroupId_New  : DXILOpMapping<94, int_dx_group_id, ComputeIDCategory, "Reads the group ID (SV_GroupID)">;
-def ThreadIdInGroup_New : DXILOpMapping<95, int_dx_thread_id_in_group, ComputeIDCategory,
+def Sin      : DXILOpMapping<13, int_sin, UnaryFloatCategory, "Returns sine(theta) for theta in radians.">;
+def UMax     : DXILOpMapping<39, int_umax, BinaryUintCategory, "Unsigned integer maximum. UMax(a,b) = a > b ? a : b">;
+def ThreadId : DXILOpMapping<93, int_dx_thread_id, ComputeIDCategory, "Reads the thread ID">;
+def GroupId  : DXILOpMapping<94, int_dx_group_id, ComputeIDCategory, "Reads the group ID (SV_GroupID)">;
+def ThreadIdInGroup : DXILOpMapping<95, int_dx_thread_id_in_group, ComputeIDCategory,
                                     "Reads the thread ID within the group (SV_GroupThreadID)">;
 def FlattenedThreadIdInGroup_New : DXILOpMapping<96, int_dx_flattened_thread_id_in_group, ComputeIDCategory,
                                     "Provides a flattened index for a given thread within a given group (SV_GroupIndex)">;

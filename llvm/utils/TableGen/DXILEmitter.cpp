@@ -205,24 +205,25 @@ DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
     assert(DefName.starts_with("int_") && "invalid intrinsic name");
     // Remove the int_ from intrinsic name.
     Intrinsic = DefName.substr(4);
-    // NOTE: For now, assume that return type and parameter types of
+    // NOTE: It is expected that return type and parameter types of
     // DXIL Operation are the same as that of the intrinsic. Deviations
     // are expected to be encoded in TableGen record specification and
-    // handled accordingly here. Support to be added later.
+    // handled accordingly here. Support to be added later, as needed.
     // Get parameter type list of the intrinsic. Types attribute contains
     // the list of as [returnType, param1Type,, param2Type, ...]
     auto TypeList = IntrinsicDef->getValueAsListInit("Types");
     unsigned TypeListSize = TypeList->size();
     OverloadParamIndex = -1;
-    // As parameter types are being considered, skip return type
-    for (unsigned i = 1; i < TypeListSize; i++) {
+    // Populate return type and parameter type names
+    for (unsigned i = 0; i < TypeListSize; i++) {
         OpTypeNames.emplace_back(TypeList->getElement(i)->getAsString());
-        // TODO: Clean this up - do we need OverloadParamIndex at all??
-        // Ignore return type
+        // Get the overload parameter index.
+        // REVISIT : Seems hacky. Is it possible that more than one parameter can be
+        // of overload kind??
         if (i > 0) {
-          const std::string AnyStr = "llvm_any";
-          if (OpTypeNames.back().compare(0, AnyStr.size(), AnyStr) == 0) {
-            OverloadParamIndex = i;
+          auto &CurParam = OpTypeNames.back();
+          if (lookupParameterKind(CurParam) >= ParameterKind::OVERLOAD) {
+              OverloadParamIndex = i;
           }
         }
     }
@@ -577,20 +578,19 @@ emitOverloadKindStr(std::string OpTypeStr) {
   return Result;
 }
 
+#if 0
+// Emit Overload Kind string representing the return type specified at
+// index 0 of OpTypeStrVec
 static std::string emitTypesAsOverloadKindStr(SmallVector<std::string> OpTypeStrVec) {
-  auto It = OpTypeStrVec.begin();
   std::string Result;
   raw_string_ostream OS(Result);
-  // Traverse a non-empty vector
-  if (It != OpTypeStrVec.end()) {
-    OS << emitOverloadKindStr(*It);
-    for (++It; It != OpTypeStrVec.end(); ++It) {
-      OS << ", " << emitOverloadKindStr(*It);
-    }
+  if (OpTypeStrVec.size() > 0) {
+    OS << emitOverloadKindStr(OpTypeStrVec[0]);
   }
-  return OS.str();
 
+  return OS.str();
 }
+#endif
 #endif
 
 static std::string lowerFirstLetter(StringRef Name) {
@@ -739,10 +739,8 @@ static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
     ClassSet.insert(Op.OpClass);
     OpClassStrings.add(getDXILOpClassName(Op.OpClass));
     SmallVector<ParameterKind> ParamKindVec;
-    // for (auto &Param : Op.Params) {
-    //   ParamKindVec.emplace_back(Param.Kind);
-    // }
-    for (unsigned i = 0; i < Op.OpTypeNames.size(); i++) {
+    // ParamKindVec is a vector of parameters. Skip return type at index 0
+    for (unsigned i = 1; i < Op.OpTypeNames.size(); i++) {
       ParamKindVec.emplace_back(lookupParameterKind(Op.OpTypeNames[i]));
     }
     ParameterMap[Op.OpClass] = ParamKindVec;
@@ -767,9 +765,9 @@ static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
     OS << "  { dxil::OpCode::" << Op.OpName << ", "
        << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass
        << ", " << OpClassStrings.get(getDXILOpClassName(Op.OpClass)) << ", "
-       << emitTypesAsOverloadKindStr(Op.OpTypeNames) << ", "
+       << emitOverloadKindStr(Op.OpTypeNames[0]) << ", "
        << emitDXILOperationAttrNew(Op.OpAttributes) << ", " << Op.OverloadParamIndex
-       << ", " << Op.OpTypeNames.size() << ", "
+       << ", " << Op.OpTypeNames.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " },\n";
   }
   OS << "  };\n";
