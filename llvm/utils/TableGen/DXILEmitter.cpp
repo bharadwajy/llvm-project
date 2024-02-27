@@ -43,38 +43,6 @@ struct DXILParameter {
   DXILParameter(const Record *R);
 };
 
-struct DXILOperationDesc {
-  StringRef OpName;   // name of DXIL operation
-  int OpCode;         // ID of DXIL operation
-  StringRef OpClass;  // name of the opcode class
-  StringRef Category; // classification for this instruction
-  StringRef Doc;      // the documentation description of this instruction
-
-  SmallVector<DXILParameter> Params; // the operands that this instruction takes
-  SmallVector<ParameterKind> OverloadTypes; // overload types if applicable
-  std::string Attr; // operation attribute; reference to string representation
-                  // of llvm::Attribute::AttrKind
-  StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
-                        // means no map exists
-  bool IsDeriv = false; // whether this is some kind of derivative
-  bool IsGradient = false; // whether this requires a gradient calculation
-  bool IsFeedback = false; // whether this is a sampler feedback op
-  bool IsWave =
-      false; // whether this requires in-wave, cross-lane functionality
-  bool RequiresUniformInputs = false; // whether this operation requires that
-                                      // all of its inputs are uniform across
-                                      // the wave
-  SmallVector<StringRef, 4>
-      ShaderStages; // shader stages to which this applies, empty for all.
-  DXILShaderModel ShaderModel;           // minimum shader model required
-  DXILShaderModel ShaderModelTranslated; // minimum shader model required with
-                                         // translation by linker
-  int OverloadParamIndex; // parameter index which control the overload.
-                          // When < 0, should be only 1 overload type.
-  SmallVector<StringRef, 4> counters; // counters for this inst.
-  DXILOperationDesc(const Record *);
-};
-
 #if NEW_CODE
 struct DXILOpIntrMap {
   int OpCode;           // Opcode corresponding to DXIL Operation
@@ -155,40 +123,6 @@ static ParameterKind lookupParameterKind(StringRef typeNameStr) {
   assert(paramKind != ParameterKind::INVALID &&
          "Unsupported DXIL Type specified");
   return paramKind;
-}
-
-DXILOperationDesc::DXILOperationDesc(const Record *R) {
-  OpName = R->getValueAsString("OpName");
-  OpCode = R->getValueAsInt("OpCode");
-  OpClass = R->getValueAsDef("OpClass")->getValueAsString("Name");
-  Category = R->getValueAsDef("OpCategory")->getValueAsString("Name");
-
-  if (R->getValue("llvm_intrinsic")) {
-    auto *IntrinsicDef = R->getValueAsDef("llvm_intrinsic");
-    auto DefName = IntrinsicDef->getName();
-    assert(DefName.starts_with("int_") && "invalid intrinsic name");
-    // Remove the int_ from intrinsic name.
-    Intrinsic = DefName.substr(4);
-  }
-
-  Doc = R->getValueAsString("Doc");
-
-  ListInit *ParamList = R->getValueAsListInit("Params");
-  OverloadParamIndex = -1;
-  for (unsigned I = 0; I < ParamList->size(); ++I) {
-    Record *Param = ParamList->getElementAsRecord(I);
-    Params.emplace_back(DXILParameter(Param));
-    auto &CurParam = Params.back();
-    if (CurParam.Kind >= ParameterKind::OVERLOAD)
-      OverloadParamIndex = I;
-  }
-  ListInit *OverloadTypeList = R->getValueAsListInit("OverloadTypes");
-
-  for (unsigned I = 0; I < OverloadTypeList->size(); ++I) {
-    Record *R = OverloadTypeList->getElementAsRecord(I);
-    OverloadTypes.emplace_back(lookupParameterKind(R->getNameInitAsString()));
-  }
-  Attr = R->getValue("Attribute")->getValue()->getAsString();
 }
 
 #if NEW_CODE
