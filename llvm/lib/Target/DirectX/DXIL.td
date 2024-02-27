@@ -45,7 +45,7 @@ def NeedsUniformInputs : IntrinsicProperty;
 // LLVM intrinsic that DXIL operation maps to.
 class LLVMIntrinsic<Intrinsic llvm_intrinsic_> { Intrinsic llvm_intrinsic = llvm_intrinsic_; }
 
-// Abstraction DXIL Operation opcode to LLVM intrinsic
+// Abstraction DXIL Operation to LLVM intrinsic
 class DXILOpMapping<int opCode, Intrinsic intrinsic, DXILOpCategory category, string doc> {
   int OpCode = opCode;                 // Opcode corresponding to DXIL Operation
   Intrinsic LLVMIntrinsic = intrinsic; // LLVM Intrinsic the DXIL Operation maps to
@@ -53,6 +53,7 @@ class DXILOpMapping<int opCode, Intrinsic intrinsic, DXILOpCategory category, st
   DXILOpCategory OpCategory = category;// Category of the operation (Is this really needed??)
 }
 
+// Concrete definition of DXIL Operation mapping to corresponding LLVM intrinsic
 def Sin      : DXILOpMapping<13, int_sin, UnaryFloatCategory, "Returns sine(theta) for theta in radians.">;
 def UMax     : DXILOpMapping<39, int_umax, BinaryUintCategory, "Unsigned integer maximum. UMax(a,b) = a > b ? a : b">;
 def ThreadId : DXILOpMapping<93, int_dx_thread_id, ComputeIDCategory, "Reads the thread ID">;
