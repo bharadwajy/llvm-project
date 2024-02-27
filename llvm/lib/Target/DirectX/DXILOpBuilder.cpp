@@ -221,10 +221,13 @@ static Type *getTypeFromParameterKind(ParameterKind Kind, Type *OverloadTy) {
   return nullptr;
 }
 
-// Construct DXIL function type. This is the type of a function with
-// the following prototype
-//     OverloadType dx.op.<opclass>.<return-type>(int opcode, <param types>)
-// <param-types> are constructed from types in Prop.
+/// Construct DXIL function type. This is the type of a function with
+/// the following prototype
+///     OverloadType dx.op.<opclass>.<return-type>(int opcode, <param types>)
+/// <param-types> are constructed from types in Prop.
+/// \param Prop  Structure containing DXIL Operation properties based on
+///               its specification in DXIL.td.
+/// \param OverloadTy Return type to be used to construct DXIL function type.
 static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
                                            Type *OverloadTy) {
   SmallVector<Type *> ArgTys;
@@ -278,8 +281,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *OverloadTy,
   return B.CreateCall(Fn, FullArgs);
 }
 
-Type *DXILOpBuilder::getOverloadTy(dxil::OpCode OpCode, FunctionType *FT,
-                                   bool NoOpCodeParam) {
+Type *DXILOpBuilder::getOverloadTy(dxil::OpCode OpCode, FunctionType *FT) {
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
   // If DXIL Op has no overload parameter, just return the
@@ -315,8 +317,7 @@ Type *DXILOpBuilder::getOverloadTy(dxil::OpCode OpCode, FunctionType *FT,
   Type *OverloadType = FT->getReturnType();
   if (Prop->OverloadParamIndex != 0) {
     // Skip Return Type.
-    const unsigned SkipedParam = NoOpCodeParam ? 1 : 0;
-    OverloadType = FT->getParamType(Prop->OverloadParamIndex - SkipedParam);
+    OverloadType = FT->getParamType(Prop->OverloadParamIndex - 1);
   }
 
   auto ParamKinds = getOpCodeParameterKind(*Prop);
