@@ -35,13 +35,6 @@ def BinaryUintCategory : DXILOpCategory<"Binary uint">;
 def UnaryFloatCategory : DXILOpCategory<"Unary float">;
 def ComputeIDCategory : DXILOpCategory<"Compute/Mesh/Amplification shader">;
 
-// Various properties specific to DXIL Operation
-def IsDerivative : IntrinsicProperty;
-def IsGradient : IntrinsicProperty;
-def IsFeedback : IntrinsicProperty;
-def IsWave : IntrinsicProperty;
-def NeedsUniformInputs : IntrinsicProperty;
-
 // LLVM intrinsic that DXIL operation maps to.
 class LLVMIntrinsic<Intrinsic llvm_intrinsic_> { Intrinsic llvm_intrinsic = llvm_intrinsic_; }
 
