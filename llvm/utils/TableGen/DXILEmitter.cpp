@@ -56,7 +56,6 @@ struct DXILOperationDesc {
   StringRef Doc;      // the documentation description of this instruction
 
   SmallVector<std::string> OpTypeNames; // Vector of operand type name strings - return type is at index 0
-  // SmallVector<ParameterKind> OverloadTypes; // overload types if applicable
   SmallVector<std::string> OpAttributes; // operation attribute represented as strings
   StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
                         // means no map exists
