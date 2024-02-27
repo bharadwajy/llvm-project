@@ -298,10 +298,12 @@ static std::string parameterKindToString(ParameterKind Kind) {
   llvm_unreachable("Unknown llvm::dxil::ParameterKind enum");
 }
 
+#if !NEW_CODE
 static void emitDXILOpEnum(DXILOperationDesc &Op, raw_ostream &OS) {
   // Name = ID, // Doc
   OS << Op.OpName << " = " << Op.OpCode << ", // " << Op.Doc << "\n";
 }
+#endif
 
 #if NEW_CODE
 static void emitDXILOpEnumNew(DXILOperationDescNew &Op, raw_ostream &OS) {
@@ -319,6 +321,7 @@ static std::string buildCategoryStr(StringSet<> &Cetegorys) {
   return OS.str();
 }
 
+#if !NEW_CODE
 // Emit enum declaration for DXIL.
 static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
                           raw_ostream &OS) {
@@ -389,6 +392,7 @@ static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
   }
   OS << "\n};\n\n";
 }
+#endif
 
 #if NEW_CODE
 static void emitDXILEnumsNew(std::vector<DXILOperationDescNew> &Ops,
@@ -451,6 +455,7 @@ static void emitDXILEnumsNew(std::vector<DXILOperationDescNew> &Ops,
 }
 #endif
 
+#if !NEW_CODE
 // Emit map from llvm intrinsic to DXIL operation.
 static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
                                  raw_ostream &OS) {
@@ -468,6 +473,7 @@ static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
   OS << "};\n";
   OS << "\n";
 }
+#endif
 
 #if NEW_CODE
 // Emit map from llvm intrinsic to DXIL operation.
@@ -489,6 +495,7 @@ static void emitDXILIntrinsicMapNew(std::vector<DXILOperationDescNew> &Ops,
 }
 #endif
 
+#if !NEW_CODE
 /*!
  Convert operation attribute string to Attribute enum
 
@@ -501,6 +508,7 @@ static std::string emitDXILOperationAttr(StringRef Attr) {
       .Case("ReadOnly", "Attribute::ReadOnly")
       .Default("Attribute::None");
 }
+#endif
 
 #if NEW_CODE
 /*!
@@ -522,6 +530,7 @@ static std::string emitDXILOperationAttrNew(SmallVector<std::string> Attrs) {
 }
 #endif
 
+#if !NEW_CODE
 static std::string overloadKindStr(ParameterKind Overload) {
   switch (Overload) {
   case ParameterKind::HALF:
@@ -546,7 +555,9 @@ static std::string overloadKindStr(ParameterKind Overload) {
     return "OverloadKind::UNKNOWN";
   }
 }
+#endif
 
+#if !NEW_CODE
 static std::string
 getDXILOperationOverloads(SmallVector<ParameterKind> Overloads) {
   // Format is: OverloadKind::FLOAT | OverloadKind::HALF
@@ -559,6 +570,7 @@ getDXILOperationOverloads(SmallVector<ParameterKind> Overloads) {
   }
   return OS.str();
 }
+#endif
 
 #if NEW_CODE
 static std::string
@@ -611,6 +623,7 @@ static std::string getDXILOpClassName(StringRef OpClass) {
       .Default(lowerFirstLetter(OpClass));
 }
 
+#if !NEW_CODE
 static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
                                    raw_ostream &OS) {
   // Sort by OpCode.
@@ -715,6 +728,7 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
   OS << "  return DXILOpParameterKindTable + Index;\n";
   OS << "}\n ";
 }
+#endif
 
 #if NEW_CODE
 static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
@@ -825,10 +839,11 @@ static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
 #endif
 
 static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
-  std::vector<Record *> Ops = Records.getAllDerivedDefinitions("DXILOperation");
   OS << "// Generated code, do not edit.\n";
   OS << "\n";
 
+#if !NEW_CODE
+  std::vector<Record *> Ops = Records.getAllDerivedDefinitions("DXILOperation");
   std::vector<DXILOperationDesc> DXILOps;
   DXILOps.reserve(Ops.size());
   for (auto *Record : Ops) {
@@ -848,6 +863,7 @@ static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
   OS << "#endif\n\n";
 
   OS << "\n";
+#endif
 
 #if NEW_CODE
   // New code
