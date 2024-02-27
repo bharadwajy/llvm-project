@@ -13,6 +13,7 @@
 
 #include "SequenceToOffsetTable.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringSet.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -41,7 +42,6 @@ struct DXILOperationDesc {
   std::string OpName;   // name of DXIL operation
   int OpCode;         // ID of DXIL operation
   StringRef OpClass;  // name of the opcode class
-  StringRef Category; // classification for this instruction
   StringRef Doc;      // the documentation description of this instruction
 
   SmallVector<std::string> OpTypeNames; // Vector of operand type name strings - return type is at index 0
@@ -110,7 +110,6 @@ static ParameterKind lookupParameterKind(StringRef typeNameStr) {
 DXILOperationDesc::DXILOperationDesc(const Record *R) {
   OpName = R->getNameInitAsString();
   OpCode = R->getValueAsInt("OpCode");
-  Category = R->getValueAsDef("OpCategory")->getValueAsString("Name");
 
   Doc = R->getValueAsString("Doc");
 
@@ -205,15 +204,6 @@ static void emitDXILOpEnum(DXILOperationDesc &Op, raw_ostream &OS) {
   OS << Op.OpName << " = " << Op.OpCode << ", // " << Op.Doc << "\n";
 }
 
-static std::string buildCategoryStr(StringSet<> &Cetegorys) {
-  std::string Str;
-  raw_string_ostream OS(Str);
-  for (auto &It : Cetegorys) {
-    OS << " " << It.getKey();
-  }
-  return OS.str();
-}
-
 static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
                           raw_ostream &OS) {
   // Sort by OpCode
@@ -224,51 +214,21 @@ static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
   OS << "// Enumeration for operations specified by DXIL\n";
   OS << "enum class OpCode : unsigned {\n";
 
-  StringMap<StringSet<>> ClassMap;
-  StringRef PrevCategory = "";
   for (auto &Op : Ops) {
-    StringRef Category = Op.Category;
-    if (Category != PrevCategory) {
-      OS << "\n// " << Category << "\n";
-      PrevCategory = Category;
-    }
     emitDXILOpEnum(Op, OS);
-    auto It = ClassMap.find(Op.OpClass);
-    if (It != ClassMap.end()) {
-      It->second.insert(Op.Category);
-    } else {
-      ClassMap[Op.OpClass].insert(Op.Category);
-    }
   }
 
   OS << "\n};\n\n";
 
-  std::vector<std::pair<std::string, std::string>> ClassVec;
-  for (auto &It : ClassMap) {
-    ClassVec.emplace_back(
-        std::make_pair(It.getKey().str(), buildCategoryStr(It.second)));
-  }
-  // Sort by Category + ClassName.
-  llvm::sort(ClassVec, [](std::pair<std::string, std::string> &A,
-                          std::pair<std::string, std::string> &B) {
-    StringRef ClassA = A.first;
-    StringRef CategoryA = A.second;
-    StringRef ClassB = B.first;
-    StringRef CategoryB = B.second;
-    // Group by Category first.
-    if (CategoryA == CategoryB)
-      // Inside same Category, order by ClassName.
-      return ClassA < ClassB;
-    else
-      return CategoryA < CategoryB;
-  });
-
   OS << "// Groups for DXIL operations with equivalent function templates\n";
   OS << "enum class OpCodeClass : unsigned {\n";
-  PrevCategory = "";
-  for (auto &It : ClassVec) {
-    StringRef Name = It.first;
-    OS << Name << ",\n";
+  // Collect OpClasses in a set to print
+  SmallSet<StringRef, 2> OpClassSet;
+  for (auto &Op : Ops) {
+    OpClassSet.insert(Op.OpClass);
+  }
+  for (auto &C : OpClassSet) {
+    OS << C << ",\n";
   }
   OS << "\n};\n\n";
 }
