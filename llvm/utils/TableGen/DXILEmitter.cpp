@@ -32,13 +32,15 @@ struct DXILShaderModel {
 };
 
 struct DXILOperationDesc {
-  std::string OpName;   // name of DXIL operation
+  std::string OpName; // name of DXIL operation
   int OpCode;         // ID of DXIL operation
   StringRef OpClass;  // name of the opcode class
   StringRef Doc;      // the documentation description of this instruction
 
-  SmallVector<std::string> OpTypeNames; // Vector of operand type name strings - return type is at index 0
-  SmallVector<std::string> OpAttributes; // operation attribute represented as strings
+  SmallVector<std::string> OpTypeNames; // Vector of operand type name strings -
+                                        // return type is at index 0
+  SmallVector<std::string>
+      OpAttributes;     // operation attribute represented as strings
   StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
                         // means no map exists
   bool IsDeriv = false; // whether this is some kind of derivative
@@ -115,25 +117,24 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     OverloadParamIndex = -1;
     // Populate return type and parameter type names
     for (unsigned i = 0; i < TypeListSize; i++) {
-        OpTypeNames.emplace_back(TypeList->getElement(i)->getAsString());
-        // Get the overload parameter index.
-        // REVISIT : Seems hacky. Is it possible that more than one parameter can be
-        // of overload kind??
-        // REVISIT-2: Check for any additional constraints specified for DXIL
-        // operation restricting return type.
-        if (i > 0) {
-          auto &CurParam = OpTypeNames.back();
-          if (lookupParameterKind(CurParam) >= ParameterKind::OVERLOAD) {
-              OverloadParamIndex = i;
-          }
+      OpTypeNames.emplace_back(TypeList->getElement(i)->getAsString());
+      // Get the overload parameter index.
+      // REVISIT : Seems hacky. Is it possible that more than one parameter can
+      // be of overload kind?? REVISIT-2: Check for any additional constraints
+      // specified for DXIL operation restricting return type.
+      if (i > 0) {
+        auto &CurParam = OpTypeNames.back();
+        if (lookupParameterKind(CurParam) >= ParameterKind::OVERLOAD) {
+          OverloadParamIndex = i;
         }
+      }
     }
-    // Determine the operation class (unary/binary) based on the number of parameters
-    // As parameter types are being considered, skip return type
-    auto ParamSize = TypeListSize  - 1;
+    // Determine the operation class (unary/binary) based on the number of
+    // parameters As parameter types are being considered, skip return type
+    auto ParamSize = TypeListSize - 1;
     if (ParamSize == 0) {
       OpClass = "Nullary";
-    } else    if (ParamSize == 1) {
+    } else if (ParamSize == 1) {
       OpClass = "Unary";
     } else if (ParamSize == 2) {
       OpClass = "Binary";
@@ -143,11 +144,12 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     }
     // NOTE: For now, assume that attributes of DXIL Operation are the same as
     // that of the intrinsic. Deviations are expected to be encoded in TableGen
-    // record specification and handled accordingly here. Support to be added later.
+    // record specification and handled accordingly here. Support to be added
+    // later.
     auto IntrPropList = IntrinsicDef->getValueAsListInit("IntrProperties");
     auto IntrPropListSize = IntrPropList->size();
     for (unsigned i = 0; i < IntrPropListSize; i++) {
-        OpAttributes.emplace_back(IntrPropList->getElement(i)->getAsString());
+      OpAttributes.emplace_back(IntrPropList->getElement(i)->getAsString());
     }
   }
 }
@@ -195,7 +197,7 @@ static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
                           raw_ostream &OS) {
   // Sort by OpCode
   llvm::sort(Ops, [](DXILOperationDesc &A, DXILOperationDesc &B) {
-      return A.OpCode < B.OpCode;
+    return A.OpCode < B.OpCode;
   });
 
   OS << "// Enumeration for operations specified by DXIL\n";
@@ -222,7 +224,7 @@ static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
 
 // Emit map from llvm intrinsic to DXIL operation.
 static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
-                                    raw_ostream &OS) {
+                                 raw_ostream &OS) {
   OS << "\n";
   // FIXME: use array instead of SmallDenseMap.
   OS << "static const SmallDenseMap<Intrinsic::ID, dxil::OpCode> LowerMap = "
@@ -246,7 +248,8 @@ static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
  */
 static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
   for (auto Attr : Attrs) {
-    // For now just recognize IntrNoMem and IntrReadMem as valid and ignore others
+    // For now just recognize IntrNoMem and IntrReadMem as valid and ignore
+    // others
     if (Attr == "IntrNoMem") {
       return "Attribute::ReadNone";
     } else if (Attr == "IntrReadMem") {
@@ -256,18 +259,21 @@ static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
   return "Attribute::None";
 }
 
-static std::string
-emitOverloadKindStr(std::string OpTypeStr) {
-  std::string Result = StringSwitch<std::string>(OpTypeStr)
-    .Case("llvm_i16_ty", "OverloadKind::I16")
-    .Case("llvm_i32_ty", "OverloadKind::I32")
-    .Case("llvm_i64_ty", "OverloadKind::I64")
-    .Case("llvm_anyint_ty", "OverloadKind::I16 | OverloadKind::I32 | OverloadKind::I64")
-    .Case("llvm_half_ty", "OverloadKind::HALF")
-    .Case("llvm_float_ty", "OverloadKind::FLOAT")
-    .Case("llvm_double_ty", "OverloadKind::DOUBLE")
-    .Case("llvm_anyfloat_ty", "OverloadKind::HALF | OverloadKind::FLOAT | OverloadKind::DOUBLE")
-    .Default("UNHANDLED_TYPE");
+static std::string emitOverloadKindStr(std::string OpTypeStr) {
+  std::string Result =
+      StringSwitch<std::string>(OpTypeStr)
+          .Case("llvm_i16_ty", "OverloadKind::I16")
+          .Case("llvm_i32_ty", "OverloadKind::I32")
+          .Case("llvm_i64_ty", "OverloadKind::I64")
+          .Case("llvm_anyint_ty",
+                "OverloadKind::I16 | OverloadKind::I32 | OverloadKind::I64")
+          .Case("llvm_half_ty", "OverloadKind::HALF")
+          .Case("llvm_float_ty", "OverloadKind::FLOAT")
+          .Case("llvm_double_ty", "OverloadKind::DOUBLE")
+          .Case(
+              "llvm_anyfloat_ty",
+              "OverloadKind::HALF | OverloadKind::FLOAT | OverloadKind::DOUBLE")
+          .Default("UNHANDLED_TYPE");
 
   assert(Result != "UNHANDLED_TYPE" && "Unhandled parameter type");
   return Result;
@@ -336,12 +342,12 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
 
   OS << "  static const OpCodeProperty OpCodeProps[] = {\n";
   for (auto &Op : Ops) {
-    OS << "  { dxil::OpCode::" << Op.OpName << ", "
-       << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass
-       << ", " << OpClassStrings.get(getDXILOpClassName(Op.OpClass)) << ", "
+    OS << "  { dxil::OpCode::" << Op.OpName << ", " << OpStrings.get(Op.OpName)
+       << ", OpCodeClass::" << Op.OpClass << ", "
+       << OpClassStrings.get(getDXILOpClassName(Op.OpClass)) << ", "
        << emitOverloadKindStr(Op.OpTypeNames[0]) << ", "
-       << emitDXILOperationAttr(Op.OpAttributes) << ", " << Op.OverloadParamIndex
-       << ", " << Op.OpTypeNames.size() - 1 << ", "
+       << emitDXILOperationAttr(Op.OpAttributes) << ", "
+       << Op.OverloadParamIndex << ", " << Op.OpTypeNames.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " },\n";
   }
   OS << "  };\n";
@@ -401,7 +407,8 @@ static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
   OS << "// Generated code, do not edit.\n";
   OS << "\n";
   // Get all DXIL Ops to intrinsic mapping records
-  std::vector<Record *> OpIntrMaps = Records.getAllDerivedDefinitions("DXILOpMapping");
+  std::vector<Record *> OpIntrMaps =
+      Records.getAllDerivedDefinitions("DXILOpMapping");
   std::vector<DXILOperationDesc> DXILOps;
   for (auto *Record : OpIntrMaps) {
     DXILOps.emplace_back(DXILOperationDesc(Record));
