@@ -30,17 +30,6 @@ struct DXILShaderModel {
   int Minor = 0;
 };
 
-struct DXILParameter {
-  int Pos; // position in parameter list
-  ParameterKind Kind;
-  StringRef Name; // short, unique name
-  StringRef Doc;  // the documentation description of this parameter
-  bool IsConst;   // whether this argument requires a constant value in the IR
-  StringRef EnumName; // the name of the enum type if applicable
-  int MaxValue;       // the maximum value for this parameter if applicable
-  DXILParameter(const Record *R);
-};
-
 struct DXILOpIntrMap {
   int OpCode;           // Opcode corresponding to DXIL Operation
   StringRef Intrinsic;  // The llvm intrinsic that maps to map to DXIL Operation with OpCode.
@@ -175,18 +164,6 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
         OpAttributes.emplace_back(IntrPropList->getElement(i)->getAsString());
     }
   }
-}
-
-DXILParameter::DXILParameter(const Record *R) {
-  Name = R->getValueAsString("Name");
-  Pos = R->getValueAsInt("Pos");
-  Kind =
-      lookupParameterKind(R->getValue("ParamType")->getValue()->getAsString());
-  if (R->getValue("Doc"))
-    Doc = R->getValueAsString("Doc");
-  IsConst = R->getValueAsBit("IsConstant");
-  EnumName = R->getValueAsString("EnumName");
-  MaxValue = R->getValueAsInt("MaxValue");
 }
 
 static std::string parameterKindToString(ParameterKind Kind) {
