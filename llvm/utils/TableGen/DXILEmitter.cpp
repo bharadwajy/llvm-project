@@ -20,8 +20,6 @@
 #include "llvm/TableGen/Record.h"
 #include "llvm/TableGen/TableGenBackend.h"
 
-#define NEW_CODE 1
-
 using namespace llvm;
 using namespace llvm::dxil;
 
@@ -43,7 +41,6 @@ struct DXILParameter {
   DXILParameter(const Record *R);
 };
 
-#if NEW_CODE
 struct DXILOpIntrMap {
   int OpCode;           // Opcode corresponding to DXIL Operation
   StringRef Intrinsic;  // The llvm intrinsic that maps to map to DXIL Operation with OpCode.
@@ -51,7 +48,7 @@ struct DXILOpIntrMap {
   DXILOpIntrMap(const Record *R);
 };
 
-struct DXILOperationDescNew {
+struct DXILOperationDesc {
   std::string OpName;   // name of DXIL operation
   int OpCode;         // ID of DXIL operation
   StringRef OpClass;  // name of the opcode class
@@ -79,12 +76,10 @@ struct DXILOperationDescNew {
   int OverloadParamIndex; // parameter index which control the overload.
                           // When < 0, should be only 1 overload type.
   SmallVector<StringRef, 4> counters; // counters for this inst.
-  DXILOperationDescNew(const Record *);
+  DXILOperationDesc(const Record *);
 };
-#endif
 } // end anonymous namespace
 
-#if NEW_CODE
 DXILOpIntrMap::DXILOpIntrMap(const Record *R) {
   OpCode = R->getValueAsInt("OpCode");
   if (R->getValue("LLVMIntrinsic")) {
@@ -95,7 +90,6 @@ DXILOpIntrMap::DXILOpIntrMap(const Record *R) {
     Intrinsic = DefName.substr(4);
   }
 }
-#endif
 
 /*!
  Convert DXIL type name string to dxil::ParameterKind
@@ -125,8 +119,7 @@ static ParameterKind lookupParameterKind(StringRef typeNameStr) {
   return paramKind;
 }
 
-#if NEW_CODE
-DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
+DXILOperationDesc::DXILOperationDesc(const Record *R) {
   OpName = R->getNameInitAsString();
   OpCode = R->getValueAsInt("OpCode");
   Category = R->getValueAsDef("OpCategory")->getValueAsString("Name");
@@ -184,7 +177,6 @@ DXILOperationDescNew::DXILOperationDescNew(const Record *R) {
     }
   }
 }
-#endif
 
 DXILParameter::DXILParameter(const Record *R) {
   Name = R->getValueAsString("Name");
@@ -232,12 +224,10 @@ static std::string parameterKindToString(ParameterKind Kind) {
   llvm_unreachable("Unknown llvm::dxil::ParameterKind enum");
 }
 
-#if NEW_CODE
-static void emitDXILOpEnumNew(DXILOperationDescNew &Op, raw_ostream &OS) {
+static void emitDXILOpEnum(DXILOperationDesc &Op, raw_ostream &OS) {
   // Name = ID, // Doc
   OS << Op.OpName << " = " << Op.OpCode << ", // " << Op.Doc << "\n";
 }
-#endif
 
 static std::string buildCategoryStr(StringSet<> &Cetegorys) {
   std::string Str;
@@ -248,11 +238,10 @@ static std::string buildCategoryStr(StringSet<> &Cetegorys) {
   return OS.str();
 }
 
-#if NEW_CODE
-static void emitDXILEnumsNew(std::vector<DXILOperationDescNew> &Ops,
+static void emitDXILEnums(std::vector<DXILOperationDesc> &Ops,
                           raw_ostream &OS) {
   // Sort by OpCode
-  llvm::sort(Ops, [](DXILOperationDescNew &A, DXILOperationDescNew &B) {
+  llvm::sort(Ops, [](DXILOperationDesc &A, DXILOperationDesc &B) {
       return A.OpCode < B.OpCode;
   });
 
@@ -267,7 +256,7 @@ static void emitDXILEnumsNew(std::vector<DXILOperationDescNew> &Ops,
       OS << "\n// " << Category << "\n";
       PrevCategory = Category;
     }
-    emitDXILOpEnumNew(Op, OS);
+    emitDXILOpEnum(Op, OS);
     auto It = ClassMap.find(Op.OpClass);
     if (It != ClassMap.end()) {
       It->second.insert(Op.Category);
@@ -307,11 +296,9 @@ static void emitDXILEnumsNew(std::vector<DXILOperationDescNew> &Ops,
   }
   OS << "\n};\n\n";
 }
-#endif
 
-#if NEW_CODE
 // Emit map from llvm intrinsic to DXIL operation.
-static void emitDXILIntrinsicMapNew(std::vector<DXILOperationDescNew> &Ops,
+static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
                                     raw_ostream &OS) {
   OS << "\n";
   // FIXME: use array instead of SmallDenseMap.
@@ -327,16 +314,14 @@ static void emitDXILIntrinsicMapNew(std::vector<DXILOperationDescNew> &Ops,
   OS << "};\n";
   OS << "\n";
 }
-#endif
 
-#if NEW_CODE
 /*!
  Convert operation attribute string to Attribute enum
 
  @param Attr string reference
  @return std::string Attribute enum string
  */
-static std::string emitDXILOperationAttrNew(SmallVector<std::string> Attrs) {
+static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
   for (auto Attr : Attrs) {
     // For now just recognize IntrNoMem and IntrReadMem as valid and ignore others
     if (Attr == "IntrNoMem") {
@@ -347,9 +332,7 @@ static std::string emitDXILOperationAttrNew(SmallVector<std::string> Attrs) {
   }
   return "Attribute::None";
 }
-#endif
 
-#if NEW_CODE
 static std::string
 emitOverloadKindStr(std::string OpTypeStr) {
   std::string Result = StringSwitch<std::string>(OpTypeStr)
@@ -366,7 +349,6 @@ emitOverloadKindStr(std::string OpTypeStr) {
   assert(Result != "UNHANDLED_TYPE" && "Unhandled parameter type");
   return Result;
 }
-#endif
 
 static std::string lowerFirstLetter(StringRef Name) {
   if (Name.empty())
@@ -386,11 +368,10 @@ static std::string getDXILOpClassName(StringRef OpClass) {
       .Default(lowerFirstLetter(OpClass));
 }
 
-#if NEW_CODE
-static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
+static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
                                    raw_ostream &OS) {
   // Sort by OpCode.
-  llvm::sort(Ops, [](DXILOperationDescNew &A, DXILOperationDescNew &B) {
+  llvm::sort(Ops, [](DXILOperationDesc &A, DXILOperationDesc &B) {
     return A.OpCode < B.OpCode;
   });
 
@@ -436,7 +417,7 @@ static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
        << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass
        << ", " << OpClassStrings.get(getDXILOpClassName(Op.OpClass)) << ", "
        << emitOverloadKindStr(Op.OpTypeNames[0]) << ", "
-       << emitDXILOperationAttrNew(Op.OpAttributes) << ", " << Op.OverloadParamIndex
+       << emitDXILOperationAttr(Op.OpAttributes) << ", " << Op.OverloadParamIndex
        << ", " << Op.OpTypeNames.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " },\n";
   }
@@ -492,29 +473,25 @@ static void emitDXILOperationTableNew(std::vector<DXILOperationDescNew> &Ops,
   OS << "  return DXILOpParameterKindTable + Index;\n";
   OS << "}\n ";
 }
-#endif
 
 static void EmitDXILOperation(RecordKeeper &Records, raw_ostream &OS) {
   OS << "// Generated code, do not edit.\n";
   OS << "\n";
 
-#if NEW_CODE
-  // New code
   std::vector<Record *> OpIntrMaps = Records.getAllDerivedDefinitions("DXILOpMapping");
-  std::vector<DXILOperationDescNew> DXILOpsNew;
+  std::vector<DXILOperationDesc> DXILOps;
   for (auto *Record : OpIntrMaps) {
-    DXILOpsNew.emplace_back(DXILOperationDescNew(Record));
+    DXILOps.emplace_back(DXILOperationDesc(Record));
   }
   OS << "#ifdef DXIL_OP_ENUM\n";
-  emitDXILEnumsNew(DXILOpsNew, OS);
+  emitDXILEnums(DXILOps, OS);
   OS << "#endif\n\n";
   OS << "#ifdef DXIL_OP_INTRINSIC_MAP\n";
-  emitDXILIntrinsicMapNew(DXILOpsNew, OS);
+  emitDXILIntrinsicMap(DXILOps, OS);
   OS << "#endif\n\n";
   OS << "#ifdef DXIL_OP_OPERATION_TABLE\n";
-  emitDXILOperationTableNew(DXILOpsNew, OS);
+  emitDXILOperationTable(DXILOps, OS);
   OS << "#endif\n\n";
-#endif
 }
 
 static TableGen::Emitter::Opt X("gen-dxil-operation", EmitDXILOperation,
