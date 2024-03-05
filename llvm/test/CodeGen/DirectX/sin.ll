@@ -14,9 +14,6 @@ entry:
   ret float %1
 }
 
-; Function Attrs: nocallback nofree nosync nounwind readnone speculatable willreturn
-declare float @llvm.sin.f32(float) #1
-
 ; Function Attrs: noinline nounwind optnone
 define noundef half @sin_half(half noundef %a) #0 {
 entry:
