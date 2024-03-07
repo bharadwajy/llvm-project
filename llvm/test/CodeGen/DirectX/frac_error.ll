@@ -1,6 +1,6 @@
 ; RUN: not opt -S -dxil-op-lower %s 2>&1 | FileCheck %s
 
-; This test is expected to fail with the following error
+; DXIL operation frac does not support double overload type
 ; CHECK: LLVM ERROR: Invalid Overload Type
 
 ; Function Attrs: noinline nounwind optnone

@@ -257,7 +257,7 @@ static FunctionCallee getOrCreateDXILOpFunction(dxil::OpCode DXILOp,
   // FIXME: find the issue and report error in clang instead of check it in
   // backend.
   if ((Prop->OverloadTys & (uint16_t)Kind) == 0) {
-    report_fatal_error("Invalid Overload Type", false);
+    report_fatal_error("Invalid Overload Type", /* gen_crash_diag=*/false);
   }
 
   std::string FnName = constructOverloadName(Kind, OverloadTy, *Prop);

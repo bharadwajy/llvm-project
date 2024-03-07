@@ -272,14 +272,10 @@ static std::string getOverloadKindStr(const Record *R) {
   case MVT::Other:
     // Handle DXIL-specific overload types
     {
-      auto RetStr =
-          StringSwitch<std::string>(R->getNameInitAsString())
-              .Case("llvm_i16ori32_ty", "OverloadKind::I16 | OverloadKind::I32")
-              .Case("llvm_halforfloat_ty",
-                    "OverloadKind::HALF | OverloadKind::FLOAT")
-              .Default("");
-      if (RetStr != "") {
-        return RetStr;
+      if (R->getValueAsInt("isHalfOrFloat")) {
+        return "OverloadKind::HALF | OverloadKind::FLOAT";
+      } else if (R->getValueAsInt("isI16OrI32")) {
+        return "OverloadKind::I16 | OverloadKind::I32";
       }
     }
     LLVM_FALLTHROUGH;

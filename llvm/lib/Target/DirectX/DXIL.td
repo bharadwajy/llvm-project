@@ -222,13 +222,17 @@ defset list<DXILOpClass> OpClasses = {
 
 class DXILType : LLVMType<OtherVT> {
   let isAny = 1;
+  int isI16OrI32 = 0;
+  int isHalfOrFloat = 0;
 }
 
 // Concrete records for various overload types supported specifically by
 // DXIL Operations.
+let isI16OrI32 = 1 in
+  def llvm_i16ori32_ty : DXILType;
 
-def llvm_i16ori32_ty : DXILType;
-def llvm_halforfloat_ty : DXILType;
+let isHalfOrFloat = 1 in
+  def llvm_halforfloat_ty : DXILType;
 
 // Abstraction DXIL Operation to LLVM intrinsic
 class DXILOpMappingBase {
