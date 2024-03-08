@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 include "llvm/IR/Intrinsics.td"
+include "llvm/IR/Attributes.td"
 
 class DXILOpClass;
 
@@ -234,6 +235,13 @@ let isI16OrI32 = 1 in
 let isHalfOrFloat = 1 in
   def llvm_halforfloat_ty : DXILType;
 
+/// DXIL Operation attribute.
+class DXILOpAttr<string S, list<AttrProperty> P> : Attr<S, P>;
+
+// Attribute to denote a DXIL Operation that operates on extracted
+// scalar elements of an LLVM intrinsic with vector overload type.
+def ElementWiseOp : DXILOpAttr<"elementwiseop", [ParamAttr]>;
+
 // Abstraction DXIL Operation to LLVM intrinsic
 class DXILOpMappingBase {
   int OpCode = 0;                      // Opcode of DXIL Operation
@@ -242,6 +250,7 @@ class DXILOpMappingBase {
   string Doc = "";                     // A short description of the operation
   list<LLVMType> OpTypes = ?;          // Valid types of DXIL Operation in the
                                        // format [returnTy, param1ty, ...]
+  DXILOpAttr Attr = ?;
 }
 
 class DXILOpMapping<int opCode, DXILOpClass opClass,
@@ -268,6 +277,31 @@ def Round : DXILOpMapping<26, unary, int_round,
                          [llvm_halforfloat_ty, LLVMMatchType<0>]>;
 def UMax : DXILOpMapping<39, binary, int_umax,
                          "Unsigned integer maximum. UMax(a,b) = a > b ? a : b">;
+
+let Attr = ElementWiseOp in
+  def Dot2 : DXILOpMapping<54, dot2, int_dx_dot,
+                           "dot product of two float vectors Dot(a,b) = a[0]*b[0] +"
+                           " ... + a[n]*b[n] where n is between 0 and 1",
+                           [llvm_halforfloat_ty,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>]>;
+let Attr = ElementWiseOp in
+  def Dot3 : DXILOpMapping<55, dot3, int_dx_dot,
+                           "dot product of two float vectors Dot(a,b) = a[0]*b[0] +"
+                           " ... + a[n]*b[n] where n is between 0 and 2",
+                           [llvm_halforfloat_ty,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>]>;
+let Attr = ElementWiseOp in
+  def Dot4 : DXILOpMapping<56, dot4, int_dx_dot,
+                           "dot product of two float vectors Dot(a,b) = a[0]*b[0] +"
+                           " ... + a[n]*b[n] where n is between 0 and 3",
+                           [llvm_halforfloat_ty,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>,
+                           LLVMMatchType<0>, LLVMMatchType<0>]>;
 def ThreadId : DXILOpMapping<93, threadId, int_dx_thread_id,
                              "Reads the thread ID">;
 def GroupId  : DXILOpMapping<94, groupId, int_dx_group_id,
