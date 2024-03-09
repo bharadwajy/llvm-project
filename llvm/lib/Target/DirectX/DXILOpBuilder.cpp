@@ -334,5 +334,10 @@ Type *DXILOpBuilder::getOverloadTy(dxil::OpCode OpCode, FunctionType *FT) {
 const char *DXILOpBuilder::getOpCodeName(dxil::OpCode DXILOp) {
   return ::getOpCodeName(DXILOp);
 }
+
+unsigned int DXILOpBuilder::getParameterCount(dxil::OpCode DXILOp) {
+  return getOpCodeProperty(DXILOp)->NumOfParameters;
+}
+
 } // namespace dxil
 } // namespace llvm

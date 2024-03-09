@@ -255,6 +255,9 @@ class DXILOpMapping<int opCode, DXILOpClass opClass,
 }
 
 // Concrete definition of DXIL Operation mapping to corresponding LLVM intrinsic
+def Cos  : DXILOpMapping<12, unary, int_cos,
+                         "Returns sine(theta) for theta in radians.",
+                         [llvm_halforfloat_ty, LLVMMatchType<0>]>;
 def Sin  : DXILOpMapping<13, unary, int_sin,
                          "Returns sine(theta) for theta in radians.",
                          [llvm_halforfloat_ty, LLVMMatchType<0>]>;

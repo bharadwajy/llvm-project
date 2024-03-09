@@ -65,11 +65,39 @@ static bool lowerIntrinsics(Module &M) {
     Intrinsic::ID ID = F.getIntrinsicID();
     if (ID == Intrinsic::not_intrinsic)
       continue;
+
+    // Get the DXIL Op to lower F to
     auto LowerIt = LowerMap.find(ID);
     if (LowerIt == LowerMap.end())
-      continue;
-    lowerIntrinsic(LowerIt->second, F, M);
-    Updated = true;
+        continue;
+
+    auto DXILOpCode = LowerIt->second;
+
+    // If return type if vector type, generate extractelement instruction
+    // followed by the scalar lowering of the intrinsic
+    auto retTy = F.getReturnType();
+    auto isVectorTy = retTy->isVectorTy();
+    if (isVectorTy) {
+      VectorType *VT = dyn_cast<FixedVectorType>(retTy);
+      assert(VT && "Unexpected non-fixed vector type");
+      // Get vector element type and number of elements
+      Type *eltTy = VT->getScalarType();
+      unsigned eltCount = VT->getElementCount().getKnownMinValue();
+      // Get argument count of F.
+      auto fnArgCount = F.arg_size();
+      IRBuilder<> Builder(M.getContext());
+      DXILOpBuilder DXILB(M, Builder);
+      // Get the argument count of DXILOpCode
+      auto opArgCount = DXILB.getParameterCount(DXILOpCode);
+      assert (fnArgCount == opArgCount &&
+              "Mismatched argument count between intrinsic and lowering target");
+      for (unsigned i = 0; i < eltCount; i++) {
+        // auto extractElem = DXILB.
+      }
+    } else {
+      lowerIntrinsic(LowerIt->second, F, M);
+      Updated = true;
+    }
   }
   return Updated;
 }

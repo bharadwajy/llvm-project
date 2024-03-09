@@ -32,6 +32,7 @@ public:
   CallInst *createDXILOpCall(dxil::OpCode OpCode, Type *OverloadTy,
                              llvm::iterator_range<Use *> Args);
   Type *getOverloadTy(dxil::OpCode OpCode, FunctionType *FT);
+  unsigned int getParameterCount(dxil::OpCode DXILOp);
   static const char *getOpCodeName(dxil::OpCode DXILOp);
 
 private:
