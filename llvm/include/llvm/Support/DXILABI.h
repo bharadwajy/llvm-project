@@ -94,6 +94,11 @@ enum class ElementType : uint32_t {
   PackedU8x32,
 };
 
+struct Version {
+  unsigned Major = 0;
+  unsigned Minor = 0;
+};
+
 } // namespace dxil
 } // namespace llvm
 
