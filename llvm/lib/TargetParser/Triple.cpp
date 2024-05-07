@@ -1250,16 +1250,42 @@ std::string Triple::normalize(StringRef Str) {
       // than 6.[0...8] or 6.x (which translates to latest current SM version)
       // DXIL version corresponding to Shader Model version other than 6.x
       // is 1.0
-      unsigned DXILMinor = 0;
+      SubArchType DXILSubArch = DXILSubArch_v1_0;
       const unsigned SMMajor = 6;
-      const unsigned LatestCurrentDXILMinor = 8;
       if (!Ver.empty()) {
         if (Ver.getMajor() == SMMajor) {
           if (std::optional<unsigned> SMMinor = Ver.getMinor()) {
-            DXILMinor = *SMMinor;
-            // Ensure specified minor version is supported
-            if (DXILMinor > LatestCurrentDXILMinor) {
-              report_fatal_error("Unsupported Shader Model version", false);
+            switch (*SMMinor) {
+              // Redundant, but for completeness
+              case 0 :
+                DXILSubArch = DXILSubArch_v1_0;
+                break;
+              case 1 :
+                DXILSubArch = DXILSubArch_v1_1;
+                break;
+              case 2 :
+                DXILSubArch = DXILSubArch_v1_2;
+                break;
+              case 3 :
+                DXILSubArch = DXILSubArch_v1_3;
+                break;
+              case 4 :
+                DXILSubArch = DXILSubArch_v1_4;
+                break;
+              case 5 :
+                DXILSubArch = DXILSubArch_v1_5;
+                break;
+              case 6 :
+                DXILSubArch = DXILSubArch_v1_6;
+                break;
+              case 7 :
+                DXILSubArch = DXILSubArch_v1_7;
+                break;
+              case 8 :
+                DXILSubArch = DXILSubArch_v1_8;
+                break;
+              default :
+                report_fatal_error("Unsupported Shader Model version", false);
             }
           }
         }
@@ -1267,11 +1293,10 @@ std::string Triple::normalize(StringRef Str) {
         // Special case: DXIL minor version is set to LatestCurrentDXILMinor for
         // shadermodel6.x is
         if (Components[2] == "shadermodel6.x") {
-          DXILMinor = LatestCurrentDXILMinor;
+          DXILSubArch = LatestDXILSubArch;
         }
       }
-      Components[0] =
-          Components[0].str().append("v1.").append(std::to_string(DXILMinor));
+      Components[0] = getArchName(Triple::dxil, DXILSubArch);
     }
   }
   // Stick the corrected components back together to form the normalized string.
