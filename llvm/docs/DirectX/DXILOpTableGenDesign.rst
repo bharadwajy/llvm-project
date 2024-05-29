@@ -16,7 +16,7 @@ encapsulates, among other information, various DXIL Operations in
 DXIL Operations are represented in one of the following `two ways
 <https://github.com/microsoft/DirectXShaderCompiler/blob/130877392c263888ef06bab768856d3dab1f1c9a/docs/DXIL.rst#L1978>`_:
 
-#. Using LLVM instructions
+#. Using LLVM instructions.
 #. Using LLVM External functions. These are represented in LLVM IR as follows:
    * "Standard" LLVM intrinsics (e.g., ``llvm.sin.*``) and
    * HLSL intrinsics (defined as LLVM intrinsics in ``llvm/include/llvm/IR/IntrinsicsDirectX.td``, e.g., ``llvm.dx.*``)
