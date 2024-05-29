@@ -28,7 +28,7 @@ as used in ``hctdb.py``. A DXIL Op is represented by a set of associated propert
 are categorized into two groups - viz., those that are (1) consumed in DXIL backend passes
 and (2) consumed in other usage scenarios such as validation, DXIL reader, etc.
 
-1. Properties consumed in DXIL backend passes
+A. Properties consumed in DXIL backend passes
 
    1. Name of operation (``dxil_op``)
    2. The generic or HLSL-specific intrinsic that maps to the operation (``llvm_name``).
@@ -42,7 +42,7 @@ and (2) consumed in other usage scenarios such as validation, DXIL reader, etc.
    7. A string that documents the operation (``doc``) - This is not strictly necessary but is included
       for readability and documentation of the operation.
 
-2. Properties consumed in other usage scenarios
+B. Properties consumed in other usage scenarios
 
    1. Required minimum Shader Model (``shader_model``).
    2. Minimum shader model required with translation by linker (``shader_model_translated``)
