@@ -60,10 +60,10 @@ B. Properties consumed in other usage scenarios
 Motivation
 ==========
 
-DXIL backend passes depend on the knowledge of various properties of DXIL Operations.
-For example, ``DXILLowering`` pass will need information such as the DXIL operation an
-LLVM intrinsic is to be lowered to, along with valid overload and parameter types etc.
-TableGen file - ``llvm/lib/Target/DirectX/DXIL.td`` - is used to represent DXIL Operations
+DXIL backend passes depend on various properties of DXIL Operations. For example, ``DXILLowering``
+pass will need information such as the DXIL operation an LLVM intrinsic is to be lowered to,
+along with valid overload and parameter types etc. The TableGen file -
+``llvm/lib/Target/DirectX/DXIL.td`` - is used to represent DXIL Operations
 by specifying their properties listed above. ``DXIL.td`` is designed to be the single source
 of reference of DXIL Operations for DXIL backend implementation in ``llvm-project`` repo -
 analogous to ``hctdb.py`` for ``DirectXShadeCompiler`` repo. It needs to have a rich
@@ -71,8 +71,8 @@ representation capabilities that TableGen backends (such as ``DXILEmitter``) can
 Additionally, the DXIL Op specification should be easy to read and comprehend.
 
 This note focuses on specification of the set of properties consumed by DXIL backend
-passes identified above. Any of the properties from the later category are expected to be
-added as deemed necessary during implementation.
+passes identified above in category A. Any of the properties from category B are expected to be
+included as deemed necessary during implementation.
 
 Design
 ======
@@ -95,9 +95,8 @@ Design
         }
 
    Concrete operation classes, such as ``unary`` are defined inheriting from ``DXILOpClass``.
-5. Valid overload types are represented as a list of ``LLVMType`` s.
-6. Concrete records of Shader Model version and DXIL versions and are defined
-   by inheriting from the class
+5. Valid overload types are represented as a list of ``LLVMType``.
+6. Concrete records of DXIL versions and are defined by inheriting from the class
 
    .. code-block::
 
@@ -159,4 +158,3 @@ This note sketches the design of a readable and maintainable TableGen specificat
 DXIL Ops in ``DXIL.td`` intended to serve as a single source of reference for TableGen
 backends (such as ``DXILEmitter``) that generates C++ representations used in DXIL
 backend passes.
-
