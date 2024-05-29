@@ -23,8 +23,8 @@ DXIL Operations are represented in one of the following `two ways
 
    These are  collectively referred to as `LLVM Intrinsics` in this note.
 
-Following is the complete list of properties of DXIL Ops with the corresponding field used name
-as used in `hctdb.py`. A DXIL Op is represented by a set of associated properties. These
+Following is the complete list of properties of DXIL Ops with the corresponding field name
+as used in ``hctdb.py``. A DXIL Op is represented by a set of associated properties. These
 are categorized into two groups - viz., those that are (1) consumed in DXIL backend passes
 and (2) consumed in other usage scenarios such as validation, DXIL reader, etc.
 
