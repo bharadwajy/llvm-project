@@ -125,7 +125,7 @@ static std::string getTypeName(OverloadKind Kind, Type *Ty) {
   }
 }
 
-struct OpSMOverloadProp {
+struct OpSMConstraints {
   Version ShaderModelVer;
   uint16_t ValidTys;
   uint16_t ValidShaderKinds;
@@ -139,8 +139,7 @@ struct OpCodeProperty {
   dxil::OpCodeClass OpCodeClass;
   // Offset in DXILOpCodeClassNameTable.
   unsigned OpCodeClassNameOffset;
-  // uint16_t OverloadTys;
-  std::vector<OpSMOverloadProp> OverloadProp;
+  std::vector<OpSMConstraints> SMConstraints;
   llvm::Attribute::AttrKind FuncAttr;
   int OverloadParamIndex;        // parameter index which control the overload.
                                  // When < 0, should be only 1 overload type.
@@ -263,10 +262,10 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
 static uint16_t getValidOverloadMask(const OpCodeProperty *Prop,
                                      const Version SMVer) {
   uint16_t ValidTyMask = 0;
-  // std::vector Prop->OverloadProp is in ascending order of SM Version
+  // std::vector Prop->SMConstraints is in ascending order of SM Version
   // Overloads of highest SM version that is not greater than SMVer
   // are the ones that are valid for SMVer.
-  for (auto OL : Prop->OverloadProp) {
+  for (auto OL : Prop->SMConstraints) {
     if (VersionTuple(OL.ShaderModelVer.Major, OL.ShaderModelVer.Minor) <=
         VersionTuple(SMVer.Major, SMVer.Minor)) {
       ValidTyMask = OL.ValidTys;
@@ -280,10 +279,10 @@ static uint16_t getValidOverloadMask(const OpCodeProperty *Prop,
 static uint16_t getValidShaderKindMask(const OpCodeProperty *Prop,
                                        const Version SMVer) {
   uint16_t ShaderKindMask = ShaderKind::Unknown;
-  // std::vector Prop->OverloadProp is in ascending order of SM Version
+  // std::vector Prop->SMConstraints is in ascending order of SM Version
   // Overloads of highest SM version that is not greater than SMVer
   // are the ones that are valid for SMVer.
-  for (auto OL : Prop->OverloadProp) {
+  for (auto OL : Prop->SMConstraints) {
     if (VersionTuple(OL.ShaderModelVer.Major, OL.ShaderModelVer.Minor) <=
         VersionTuple(SMVer.Major, SMVer.Minor)) {
       ShaderKindMask = OL.ValidShaderKinds;
