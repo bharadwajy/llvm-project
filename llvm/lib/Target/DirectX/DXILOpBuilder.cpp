@@ -259,39 +259,28 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
       ArgTys[0], ArrayRef<Type *>(&ArgTys[1], ArgTys.size() - 1), false);
 }
 
-static uint16_t getValidOverloadMask(const OpCodeProperty *Prop,
-                                     const Version SMVer) {
-  uint16_t ValidTyMask = 0;
+static int getValidConstraintIndex(const OpCodeProperty *Prop,
+                                   const Version SMVer) {
   // std::vector Prop->SMConstraints is in ascending order of SM Version
   // Overloads of highest SM version that is not greater than SMVer
   // are the ones that are valid for SMVer.
-  for (auto OL : Prop->SMConstraints) {
+  auto Size = Prop->SMConstraints.size();
+  for (unsigned I = Size - 1; I >= 0; I--) {
+    auto OL = Prop->SMConstraints[I];
     if (VersionTuple(OL.ShaderModelVer.Major, OL.ShaderModelVer.Minor) <=
         VersionTuple(SMVer.Major, SMVer.Minor)) {
-      ValidTyMask = OL.ValidTys;
-    } else {
-      break;
+      return I;
     }
   }
-  return ValidTyMask;
+  report_fatal_error(StringRef(std::to_string(SMVer.Major)
+                                   .append(".")
+                                   .append(std::to_string(SMVer.Minor))
+                                   .append(": Unhandled Shader Model Version")),
+                     /*gen_crash_diag*/ false);
+
+  return -1;
 }
 
-static uint16_t getValidShaderKindMask(const OpCodeProperty *Prop,
-                                       const Version SMVer) {
-  uint16_t ShaderKindMask = ShaderKind::Unknown;
-  // std::vector Prop->SMConstraints is in ascending order of SM Version
-  // Overloads of highest SM version that is not greater than SMVer
-  // are the ones that are valid for SMVer.
-  for (auto OL : Prop->SMConstraints) {
-    if (VersionTuple(OL.ShaderModelVer.Major, OL.ShaderModelVer.Minor) <=
-        VersionTuple(SMVer.Major, SMVer.Minor)) {
-      ShaderKindMask = OL.ValidShaderKinds;
-    } else {
-      break;
-    }
-  }
-  return ShaderKindMask;
-}
 namespace llvm {
 namespace dxil {
 
@@ -300,16 +289,8 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Version SMVer,
                                           Type *OverloadTy,
                                           SmallVector<Value *> Args) {
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
-  uint64_t ValidTyMask = getValidOverloadMask(Prop, SMVer);
-
-  if (ValidTyMask == 0) {
-    report_fatal_error(
-        StringRef(std::to_string(SMVer.Major)
-                      .append(".")
-                      .append(std::to_string(SMVer.Minor))
-                      .append(": Unhandled Shader Model Version")),
-        /*gen_crash_diag*/ false);
-  }
+  int Index = getValidConstraintIndex(Prop, SMVer);
+  uint16_t ValidTyMask = Prop->SMConstraints[Index].ValidTys;
 
   OverloadKind Kind = getOverloadKind(OverloadTy);
   if ((ValidTyMask & (uint16_t)Kind) == 0) {
@@ -317,7 +298,8 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Version SMVer,
   }
 
   // Ensure Opcode is valid in the targetted shader kind
-  uint16_t ValidShaderKindMask = getValidShaderKindMask(Prop, SMVer);
+
+  uint16_t ValidShaderKindMask = Prop->SMConstraints[Index].ValidShaderKinds;
 
   if (ValidShaderKindMask == ShaderKind::Unknown) {
     report_fatal_error(StringRef(std::to_string(SMVer.Major)
@@ -355,7 +337,8 @@ Type *DXILOpBuilder::getOverloadTy(dxil::OpCode OpCode, Version SMVer,
   // precise return type specified.
   if (Prop->OverloadParamIndex < 0) {
     auto &Ctx = FT->getContext();
-    uint16_t ValidTyMask = getValidOverloadMask(Prop, SMVer);
+    int Index = getValidConstraintIndex(Prop, SMVer);
+    uint16_t ValidTyMask = Prop->SMConstraints[Index].ValidTys;
 
     if (ValidTyMask == 0) {
       report_fatal_error(
