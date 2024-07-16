@@ -249,8 +249,14 @@ class Pred;
 // Following classes represent predicate that evaluate to the payload,
 // if one xists, unconditionally.
 
-// Predicate that evaluates to specified DXIL version unconditionally.
-class DXILVersion<Version ver> : Pred {
+// Predicate that specifies minimum DXIL Version of operation validity.
+class Enabled<Version ver> : Pred {
+  Version dxil_version = ver;
+}
+
+// Predicate that specifies minimum DXIL Version of operation from which
+// it is no longer valid.
+class Removed<Version ver> : Pred {
   Version dxil_version = ver;
 }
 
@@ -285,6 +291,10 @@ def IsWave : DXILAttribute;
 def NeedsUniformInputs : DXILAttribute;
 def IsBarrier : DXILAttribute;
 
+class VersionedAttributes<Version ver = DXIL1_0, list<DXILAttribute> attrs> {
+  Version dxil_version = ver;
+  list<DXILAttribute> attributes = attrs;
+}
 
 // Marker used to identify attribute list.
 def attrs;
@@ -322,6 +332,9 @@ class DXILOp<int opcode, DXILOpClass opclass> {
 
   // Operation attributes
   list<DXILAttribute> attributes = [];
+
+  // Versioned attributes of operation
+  list<VersionedAttributes> versioned_attributes = [];
 }
 
 // Concrete definitions of DXIL Operations
@@ -332,9 +345,12 @@ def Abs :  DXILOp<6, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
-                   [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
+      [Constraints<Enabled<DXIL1_0>,
+                   [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>,
+       Constraints<Removed<DXIL1_8>>
+      ];
   let attributes = [ReadNone];
+  let versioned_attributes = [VersionedAttributes<DXIL1_0, [ReadNone]>];
 }
 
 def IsInf :  DXILOp<9, isSpecialFloat> {
@@ -343,7 +359,7 @@ def IsInf :  DXILOp<9, isSpecialFloat> {
   let arguments = [llvm_anyfloat_ty];
   let result = [llvm_i1_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -354,7 +370,7 @@ def Cos :  DXILOp<12, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -365,7 +381,7 @@ def Sin :  DXILOp<13, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -376,7 +392,7 @@ def Tan :  DXILOp<14, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -387,7 +403,7 @@ def ACos :  DXILOp<15, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -398,7 +414,7 @@ def ASin :  DXILOp<16, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -409,7 +425,7 @@ def ATan :  DXILOp<17, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -420,7 +436,7 @@ def HCos :  DXILOp<18, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -431,7 +447,7 @@ def HSin :  DXILOp<19, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -442,7 +458,7 @@ def HTan :  DXILOp<20, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -454,7 +470,7 @@ def Exp2 :  DXILOp<21, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -466,7 +482,7 @@ def Frac :  DXILOp<22, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -477,7 +493,7 @@ def Log2 :  DXILOp<23, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -489,7 +505,7 @@ def Sqrt :  DXILOp<24, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -501,7 +517,7 @@ def RSqrt :  DXILOp<25, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -513,7 +529,7 @@ def Round :  DXILOp<26, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -525,7 +541,7 @@ def Floor :  DXILOp<27, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -537,7 +553,7 @@ def Ceil :  DXILOp<28, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -548,7 +564,7 @@ def Trunc :  DXILOp<29, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -559,7 +575,7 @@ def Rbits :  DXILOp<30, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -570,7 +586,7 @@ def FMax :  DXILOp<35, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -581,7 +597,7 @@ def FMin :  DXILOp<36, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -592,7 +608,7 @@ def SMax :  DXILOp<37, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -603,7 +619,7 @@ def SMin :  DXILOp<38, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -614,7 +630,7 @@ def UMax :  DXILOp<39, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -625,7 +641,7 @@ def UMin :  DXILOp<40, binary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -637,7 +653,7 @@ def FMad :  DXILOp<46, tertiary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -649,7 +665,7 @@ def IMad :  DXILOp<48, tertiary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -661,7 +677,7 @@ def UMad :  DXILOp<49, tertiary> {
   let arguments = [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>];
   let result = [dxil_overload_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let attributes = [ReadNone];
 }
@@ -673,7 +689,7 @@ def Dot2 :  DXILOp<54, dot2> {
   let arguments = !listsplat(llvm_anyfloat_ty, 4);
   let result = [llvm_anyfloat_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -685,7 +701,7 @@ def Dot3 :  DXILOp<55, dot3> {
   let arguments = !listsplat(llvm_anyfloat_ty, 6);
   let result = [llvm_anyfloat_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -697,7 +713,7 @@ def Dot4 :  DXILOp<56, dot4> {
   let arguments = !listsplat(llvm_anyfloat_ty, 8);
   let result = [llvm_anyfloat_ty];
   let constraints = [
-    Constraints<DXILVersion<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
+    Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let attributes = [ReadNone];
 }
@@ -708,7 +724,7 @@ def ThreadId :  DXILOp<93, threadId> {
   let arguments = [llvm_i32_ty];
   let result = [llvm_i32_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Stages<[compute, mesh, amplification, node]>]>];
   let attributes = [ReadNone];
 }
@@ -719,7 +735,7 @@ def GroupId :  DXILOp<94, groupId> {
   let arguments = [llvm_i32_ty];
   let result = [llvm_i32_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Stages<[compute, mesh, amplification, node]>]>];
   let attributes = [ReadNone];
 }
@@ -730,7 +746,7 @@ def ThreadIdInGroup :  DXILOp<95, threadIdInGroup> {
   let arguments = [llvm_i32_ty];
   let result = [llvm_i32_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Stages<[compute, mesh, amplification, node]>]>];
   let attributes = [ReadNone];
 }
@@ -741,7 +757,7 @@ def FlattenedThreadIdInGroup :  DXILOp<96, flattenedThreadIdInGroup> {
   let LLVMIntrinsic = int_dx_flattened_thread_id_in_group;
   let result = [llvm_i32_ty];
   let constraints =
-      [Constraints<DXILVersion<DXIL1_0>,
+      [Constraints<Enabled<DXIL1_0>,
                    [Stages<[compute, mesh, amplification, node]>]>];
   let attributes = [ReadNone];
 }
