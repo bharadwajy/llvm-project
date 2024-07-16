@@ -229,20 +229,20 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
 }
 
 static int getValidConstraintIndex(const OpCodeProperty *Prop,
-                                   const VersionTuple SMVer) {
-  // std::vector Prop->Constraints is in ascending order of SM Version
-  // Overloads of highest SM version that is not greater than SMVer
-  // are the ones that are valid for SMVer.
+                                   const VersionTuple DXILVer) {
+  // std::vector Prop->Constraints is in ascending order of DXIL Version
+  // Overloads of highest DXIL version that is not greater than DXILVer
+  // are the ones that are valid for DXILVer.
   auto Size = Prop->Constraints.size();
   for (int I = Size - 1; I >= 0; I--) {
     auto OL = Prop->Constraints[I];
-    if (VersionTuple(OL.ShaderModelVer.Major, OL.ShaderModelVer.Minor) <=
-        SMVer) {
+    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <=
+        DXILVer) {
       return I;
     }
   }
   report_fatal_error(
-      StringRef(SMVer.getAsString().append(": Unknown Shader Model Version")),
+      StringRef(DXILVer.getAsString().append(": Unknown DXIL Version")),
       /*gen_crash_diag*/ false);
 
   return -1;
@@ -260,16 +260,16 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   // well-formed or the target is supported since these checks would have
   // been done at the time the module M is constructed in the earlier stages of
   // compilation.
-  auto Major = Triple(TTStr).getOSVersion().getMajor();
+  auto Major = Triple(TTStr).getDXILVersion().getMajor();
   auto MinorOrErr = Triple(TTStr).getOSVersion().getMinor();
   uint32_t Minor = MinorOrErr.has_value() ? *MinorOrErr : 0;
-  VersionTuple SMVer(Major, Minor);
+  VersionTuple DXILVer(Major, Minor);
   // Get Shader Stage Kind
   Triple::EnvironmentType ShaderEnv = Triple(TTStr).getEnvironment();
   auto ShaderEnvStr = Triple(TTStr).getEnvironmentName();
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
-  int Index = getValidConstraintIndex(Prop, SMVer);
+  int Index = getValidConstraintIndex(Prop, DXILVer);
   uint16_t ValidTyMask = Prop->Constraints[Index].ValidTys;
 
   OverloadKind Kind = getOverloadKind(OverloadTy);
@@ -287,7 +287,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   // Ensure Environment type is known
   if (ShaderEnv == Triple::UnknownEnvironment) {
     report_fatal_error(
-        StringRef(SMVer.getAsString().append(
+        StringRef(DXILVer.getAsString().append(
             ": Unknown Compilation Target Shader Stage specified ")),
         /*gen_crash_diag*/ false);
   }
@@ -301,7 +301,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   if (ValidShaderKindMask == ShaderKind::Unknown) {
     report_fatal_error(
         StringRef(
-            SMVer.getAsString()
+            DXILVer.getAsString()
                 .append(": Unknown Target Shader Stage for DXIL operation - ")
                 .append(getOpCodeName((OpCode)))),
         /*gen_crash_diag*/ false);
@@ -309,7 +309,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
 
   // Validate the shader stage specified in target triple to be known
   if (ModuleStagekind == ShaderKind::Unknown) {
-    report_fatal_error(StringRef(SMVer.getAsString().append(
+    report_fatal_error(StringRef(DXILVer.getAsString().append(
                            ": DXIL Module created with Unspecifed or Unknown "
                            "Target Shader Stage")),
                        /*gen_crash_diag*/ false);
@@ -321,8 +321,8 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
         StringRef(std::string(ShaderEnvStr)
                       .append(" : Invalid Shader Stage for DXIL operation - ")
                       .append(getOpCodeName(OpCode))
-                      .append(" for Shader Model ")
-                      .append(SMVer.getAsString())),
+                      .append(" for DXIL Version ")
+                      .append(DXILVer.getAsString())),
         /*gen_crash_diag*/ false);
   }
 

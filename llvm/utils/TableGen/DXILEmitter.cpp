@@ -172,16 +172,16 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   std::sort(ConstrintRecs.begin(), ConstrintRecs.end(),
             [](Record *RecA, Record *RecB) {
               unsigned RecAMaj = RecA->getValueAsDef("pred")
-                                     ->getValueAsDef("sm_version")
+                                     ->getValueAsDef("dxil_version")
                                      ->getValueAsInt("Major");
               unsigned RecAMin = RecA->getValueAsDef("pred")
-                                     ->getValueAsDef("sm_version")
+                                     ->getValueAsDef("dxil_version")
                                      ->getValueAsInt("Minor");
               unsigned RecBMaj = RecB->getValueAsDef("pred")
-                                     ->getValueAsDef("sm_version")
+                                     ->getValueAsDef("dxil_version")
                                      ->getValueAsInt("Major");
               unsigned RecBMin = RecB->getValueAsDef("pred")
-                                     ->getValueAsDef("sm_version")
+                                     ->getValueAsDef("dxil_version")
                                      ->getValueAsInt("Minor");
 
               return (VersionTuple(RecAMaj, RecAMin) <
@@ -301,19 +301,19 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
   std::string Prefix = "";
   ConstraintString.append("{");
   // If no constraints were specified, assume the operation
-  // a) to be supported in SM 6.0 and later
+  // a) to be supported in DXIL Version 1.0 and later
   // b) has no overload types
   // c) is supported in all shader stage kinds
   if (Recs.empty()) {
     ConstraintString.append(
-        "{{6, 0}, OverloadKind::UNDEFINED, ShaderKind::allKinds}}");
+        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::allKinds}}");
   }
   for (auto ConstrRec : Recs) {
     auto SMConstrRec = ConstrRec->getValueAsDef("pred");
     unsigned Major =
-        SMConstrRec->getValueAsDef("sm_version")->getValueAsInt("Major");
+        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
     unsigned Minor =
-        SMConstrRec->getValueAsDef("sm_version")->getValueAsInt("Minor");
+        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
     ConstraintString.append(Prefix).append("{{")
         .append(std::to_string(Major))
         .append(", ")
@@ -624,7 +624,7 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   // Emit struct Constraints that encapsulate overload and shader kind
   // constraints predicated on shader model version, if any.
   OS << "struct OpConstraints { \n \
-            Version ShaderModelVer; \n";
+            Version DXILVersion; \n";
   OS << "             uint" << OverloadKindCount << "_t ValidTys; \n";
   OS << "             uint" << ShaderKindCount << "_t ValidShaderKinds; \n \
         };\n\n";
