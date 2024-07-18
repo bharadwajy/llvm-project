@@ -101,10 +101,13 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
 
   Doc = R->getValueAsString("Doc");
   SmallVector<Record *> ParamTypeRecs;
-  std::vector<Record *> RetTys = R->getValueAsListOfDefs("result");
-  for (auto Ty : RetTys) {
-    ParamTypeRecs.push_back(Ty);
-  }
+  // std::vector<Record *> RetTys = R->getValueAsListOfDefs("result");
+  // for (auto Ty : RetTys) {
+  //  ParamTypeRecs.push_back(Ty);
+  // }
+
+  ParamTypeRecs.push_back(R->getValueAsDef("result"));
+
   std::vector<Record *> ArgTys = R->getValueAsListOfDefs("arguments");
   for (auto Ty : ArgTys) {
     ParamTypeRecs.push_back(Ty);
