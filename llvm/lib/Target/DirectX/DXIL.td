@@ -224,24 +224,24 @@ defset list<DXILOpClass> OpClasses = {
 }
 
 // Shader stages
-class ShaderStage;
+class DXILShaderStage;
 
-def compute : ShaderStage;
-def domain : ShaderStage;
-def hull : ShaderStage;
-def pixel : ShaderStage;
-def vertex : ShaderStage;
-def geometry : ShaderStage;
-def library : ShaderStage;
-def amplification : ShaderStage;
-def mesh : ShaderStage;
-def node : ShaderStage;
-def raygeneration : ShaderStage;
-def intersection : ShaderStage;
-def anyhit : ShaderStage;
-def closesthit : ShaderStage;
-def callable : ShaderStage;
-def miss : ShaderStage;
+def compute : DXILShaderStage;
+def domain : DXILShaderStage;
+def hull : DXILShaderStage;
+def pixel : DXILShaderStage;
+def vertex : DXILShaderStage;
+def geometry : DXILShaderStage;
+def library : DXILShaderStage;
+def amplification : DXILShaderStage;
+def mesh : DXILShaderStage;
+def node : DXILShaderStage;
+def raygeneration : DXILShaderStage;
+def intersection : DXILShaderStage;
+def anyhit : DXILShaderStage;
+def closesthit : DXILShaderStage;
+def callable : DXILShaderStage;
+def miss : DXILShaderStage;
 
 // Primitive predicate
 class Pred;
@@ -266,8 +266,8 @@ class Overloads<list<LLVMType> tys> : Pred {
 }
 
 // Predicate that evaluates to specified list of shader stages unconditionally.
-class Stages<list<ShaderStage> st> : Pred {
-  list<ShaderStage> stage_kinds = st;
+class Stages<list<DXILShaderStage> st> : Pred {
+  list<DXILShaderStage> stage_kinds = st;
 }
 
 // Following class represents predicate that evaluates to the payload when
@@ -283,9 +283,9 @@ class VersionedOverloads<Version ver, list<LLVMType> ols> {
   list<LLVMType> overload_types = ols;
 }
 
-class VersionedStages<Version ver, list<ShaderStage> st> {
+class VersionedStages<Version ver, list<DXILShaderStage> st> {
   Version dxil_version = ver;
-  list<ShaderStage> shader_stages = st;
+  list<DXILShaderStage> shader_stages = st;
 }
 
 // DXIL Op attributes defined as true predicates, if specified

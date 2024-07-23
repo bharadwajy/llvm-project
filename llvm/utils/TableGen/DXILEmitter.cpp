@@ -569,7 +569,7 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
                                               raw_ostream &OS) {
   // Get Shader stage records
   std::vector<Record *> ShaderKindRecs =
-      Records.getAllDerivedDefinitions("ShaderStage");
+      Records.getAllDerivedDefinitions("DXILShaderStage");
   // Sort records by name
   llvm::sort(ShaderKindRecs,
              [](Record *A, Record *B) { return A->getName() < B->getName(); });
