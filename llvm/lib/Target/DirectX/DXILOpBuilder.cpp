@@ -327,22 +327,17 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   enum ShaderKind ModuleStagekind = getShaderKindEnum(ShaderEnv);
 
   // Ensure valid shader stage constraints are specified
-  if (ValidShaderKindMask == ShaderKind::Unknown) {
+  if (ValidShaderKindMask == ShaderKind::removed) {
     report_fatal_error(
         StringRef(
             DXILVer.getAsString()
-                .append(": Unknown Target Shader Stage for DXIL operation - ")
+                .append(": Unsupported Target Shader Stage for DXIL operation - ")
                 .append(getOpCodeName((OpCode)))),
         /*gen_crash_diag*/ false);
   }
 
-  // Validate the shader stage specified in target triple to be known
-  if (ModuleStagekind == ShaderKind::Unknown) {
-    report_fatal_error(StringRef(DXILVer.getAsString().append(
-                           ": DXIL Module created with Unspecifed or Unknown "
-                           "Target Shader Stage")),
-                       /*gen_crash_diag*/ false);
-  }
+  // Shader stage need not be validated since getShaderKindEnum() fails
+  // for unknown shader stage.
 
   // Verify the target shader stage is valid for the DXIL operation
   if (!(ValidShaderKindMask & ModuleStagekind)) {

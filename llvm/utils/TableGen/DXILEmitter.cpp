@@ -335,7 +335,7 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
   // c) is supported in all shader stage kinds
   if (Recs.empty()) {
     ConstraintString.append(
-        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::allKinds}}");
+        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::all_stages}}");
   }
   for (auto ConstrRec : Recs) {
     auto SMConstrRec = ConstrRec->getValueAsDef("pred");
@@ -372,7 +372,7 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
         std::string PipePrefix = "";
         auto Stages = Constr->getValueAsListOfDefs("stage_kinds");
         if (Stages.empty()) {
-          StageMaskString.append("ShaderKind::allKinds");
+          StageMaskString.append("ShaderKind::all_stages");
         }
         for (const auto *S : Stages) {
           StageMaskString.append(PipePrefix)
@@ -386,7 +386,7 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
       OverloadMaskString.append(" OverloadKind::UNDEFINED ");
     }
     if (StageMaskString.empty()) {
-      StageMaskString.append(" ShaderKind::allKinds ");
+      StageMaskString.append(" ShaderKind::all_stages ");
     }
 
     ConstraintString.append(OverloadMaskString)
@@ -417,7 +417,7 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   // c) is supported in all shader stage kinds
   if (Recs.empty()) {
     ConstraintString.append(
-        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::allKinds}}");
+        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::all_stages}}");
   }
   for (auto ConstrRec : Recs) {
     auto SMConstrRec = ConstrRec->getValueAsDef("pred");
@@ -454,7 +454,7 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
         std::string PipePrefix = "";
         auto Stages = Constr->getValueAsListOfDefs("stage_kinds");
         if (Stages.empty()) {
-          StageMaskString.append("ShaderKind::allKinds");
+          StageMaskString.append("ShaderKind::all_stages");
         }
         for (const auto *S : Stages) {
           StageMaskString.append(PipePrefix)
@@ -468,7 +468,7 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
       OverloadMaskString.append(" OverloadKind::UNDEFINED ");
     }
     if (StageMaskString.empty()) {
-      StageMaskString.append(" ShaderKind::allKinds ");
+      StageMaskString.append(" ShaderKind::all_stages ");
     }
 
     ConstraintString.append(OverloadMaskString)
@@ -684,26 +684,26 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
              [](Record *A, Record *B) { return A->getName() < B->getName(); });
 
   OS << "// Valid shader kinds\n\n";
-  // Choose the type of enum ShaderKind based on the number of stages declared
-  // plus one for allKinds
+  // Choose the type of enum ShaderKind based on the number of stages declared.
   // This gives the flexibility to just add add new stage records in DXIL.td, if
   // needed, with no need to change this backend code.
-  uint64_t ShaderKindCount = PowerOf2Ceil(ShaderKindRecs.size() + 1);
-  OS << "enum ShaderKind : uint" << ShaderKindCount << "_t {\n";
-  const std::string allKinds("allKinds");
-  // set unknown kind to 0
-  OS << "  Unknown = 0,\n";
+  size_t ShaderKindCount = ShaderKindRecs.size();
+  uint64_t ShaderKindTySz = PowerOf2Ceil(ShaderKindRecs.size() + 1);
+  OS << "enum ShaderKind : uint" << ShaderKindTySz << "_t {\n";
+  const std::string allStages("all_stages");
+  const std::string removed("removed");
   int shiftVal = 1;
   for (auto R : ShaderKindRecs) {
     auto Name = R->getName();
-    if (Name.compare(allKinds)) {
+    if (Name.compare(removed) == 0) {
+      OS << "  " << Name << " =  0,  // Pseudo-stage indicating op not supported in any stage\n";
+    } else if (Name.compare(allStages) == 0) {
+      OS << "  " << Name << " =  0x" << utohexstr(((1 << ShaderKindCount) - 1), false, 0)
+         << ", // Pseudo-stage indicating op is supported in all stages\n";
+    } else if (Name.compare(allStages)) {
       OS << "  " << Name << " = 1 << " << std::to_string(shiftVal++) << ",\n";
     }
   }
-  // allkinds is set to (1 << ShaderKindCount) - 1, with all bits set denoting
-  // support for all stages
-  OS << "  " << allKinds << " =  0x"
-     << utohexstr(((1 << shiftVal) - 1), false, 0) << "\n";
   OS << "}; // enum ShaderKind\n\n";
 
   // Emit definitions of various data types used to define DXIL Operation table
@@ -738,7 +738,7 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   OS << "struct OpConstraints { \n"
      << "    Version DXILVersion; \n"
      << "    uint" << OverloadKindCount << "_t ValidTys; \n"
-     << "    uint" << ShaderKindCount << "_t ValidShaderKinds; \n"
+     << "    uint" << ShaderKindTySz << "_t ValidShaderKinds; \n"
      << "};\n\n";
 
   // Emit struct OpOverloads that encapsulate valid overload information
