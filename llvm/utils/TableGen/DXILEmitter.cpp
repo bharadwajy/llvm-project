@@ -221,6 +221,36 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     OverloadRecs.push_back(CR);
   }
 
+  // Get stage records
+  Recs = R->getValueAsListOfDefs("stages");
+
+  if (Recs.empty()) {
+    report_fatal_error(
+        StringRef(std::string("Atleast one specification of valid stage for ")
+                      .append(OpName).append(" is required")),
+        /* gen_crash_diag=*/false);
+  }
+
+  // Sort records in ascending order of DXIL version
+  std::sort(Recs.begin(), Recs.end(),
+            [](Record *RecA, Record *RecB) {
+              unsigned RecAMaj = RecA->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Major");
+              unsigned RecAMin = RecA->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Minor");
+              unsigned RecBMaj = RecB->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Major");
+              unsigned RecBMin = RecB->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Minor");
+
+              return (VersionTuple(RecAMaj, RecAMin) <
+                      VersionTuple(RecBMaj, RecBMin));
+            });
+
+  for (Record *CR : Recs) {
+    StageRecs.push_back(CR);
+  }
+
   // Get the operation class
   OpClass = R->getValueAsDef("OpClass")->getName();
 
@@ -399,7 +429,6 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
   return ConstraintString;
 }
 
-#if 1
 /// Return a string representation of valid overload information denoted
 // by input records
 //
@@ -411,10 +440,9 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   std::string MaskString = "";
   std::string Prefix = "";
   MaskString.append("{");
-  // If no constraints were specified, assume the operation
+  // If no overload information records were specified, assume the operation
   // a) to be supported in DXIL Version 1.0 and later
   // b) has no overload types
-  // c) is supported in all shader stage kinds
   if (Recs.empty()) {
     MaskString.append(
         "{{1, 0}, OverloadKind::UNDEFINED}}");
@@ -431,12 +459,6 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
 
     // auto ConstraintList = OlRec->getValueAsListOfDefs("constraints");
     std::string OverloadMaskString = "";
-    // for (auto Constr : ConstraintList) {
-      // All Constraints are specified as anonymous records.
-      // assert(Constr->isAnonymous() &&
-      //       "Constraint Specification Record expected to be anonymous");
-      // Generate Overload mask for constraint of class Overloads
-      // if (!Constr->getType()->getAsString().compare("Overloads")) {
         std::string PipePrefix = "";
         auto OLTys = OlRec->getValueAsListOfDefs("overload_types");
         if (OLTys.empty()) {
@@ -446,8 +468,6 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
           OverloadMaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
           PipePrefix = " | ";
         }
-      // }
-    // }
     if (OverloadMaskString.empty()) {
       OverloadMaskString.append(" OverloadKind::UNDEFINED ");
     }
@@ -459,7 +479,56 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   MaskString.append("}");
   return MaskString;
 }
-#endif
+
+/// Return a string representation of valid shader stage information denoted
+// by input records
+//
+/// \param Recs A vector of records of TableGen Stages records
+/// \return std::string string representation of stages mask string
+///         predicated by DXIL Version. E.g.,
+//          {{{1, 0}, Mask1}, {{1, 2}, Mask2}, ...}
+static std::string getStageMaskString(const SmallVector<Record *> Recs) {
+  std::string MaskString = "";
+  std::string Prefix = "";
+  MaskString.append("{");
+  // Atleast one stage information record is expected to be specified.
+  if (Recs.empty()) {
+    report_fatal_error("Atleast one specification of valid stages for operation must be specified",
+        /*gen_crash_diag*/ false);
+  }
+
+  for (auto StRec : Recs) {
+    unsigned Major =
+        StRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned Minor =
+        StRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    MaskString.append(Prefix).append("{{")
+        .append(std::to_string(Major))
+        .append(", ")
+        .append(std::to_string(Minor).append("}, "));
+
+    // auto ConstraintList = OlRec->getValueAsListOfDefs("constraints");
+    std::string StageMaskString = "";
+    std::string PipePrefix = "";
+    auto Stages = StRec->getValueAsListOfDefs("shader_stages");
+    if (Stages.empty()) {
+      report_fatal_error("No valid stages for operation specified",
+                          /*gen_crash_diag*/ false);
+    }
+    for (const auto *S : Stages) {
+      MaskString.append(PipePrefix)
+                     .append("ShaderKind::")
+                     .append(S->getName());
+      PipePrefix = " | ";
+    }
+
+    MaskString.append(StageMaskString);
+    MaskString.append("}");
+    Prefix = ", ";
+  }
+  MaskString.append("}");
+  return MaskString;
+}
 
 /// Emit Enums of DXIL Ops
 /// \param A vector of DXIL Ops
@@ -599,7 +668,8 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
-    OS << " \n// " << getOverloadMaskString(Op.OverloadRecs) << "\n";
+    OS << "\n// " << getOverloadMaskString(Op.OverloadRecs) << "\n";
+    OS << "// " << getStageMaskString(Op.StageRecs) << "\n";
   }
   OS << "  };\n";
 

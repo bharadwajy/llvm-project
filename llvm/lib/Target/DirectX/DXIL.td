@@ -376,6 +376,7 @@ def IsInf :  DXILOp<9, isSpecialFloat> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -388,6 +389,7 @@ def Cos :  DXILOp<12, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -400,6 +402,7 @@ def Sin :  DXILOp<13, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -412,6 +415,7 @@ def Tan :  DXILOp<14, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -424,6 +428,7 @@ def ACos :  DXILOp<15, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -436,6 +441,7 @@ def ASin :  DXILOp<16, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -448,6 +454,7 @@ def ATan :  DXILOp<17, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -460,6 +467,7 @@ def HCos :  DXILOp<18, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -472,6 +480,7 @@ def HSin :  DXILOp<19, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -484,6 +493,7 @@ def HTan :  DXILOp<20, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -497,6 +507,7 @@ def Exp2 :  DXILOp<21, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -510,6 +521,7 @@ def Frac :  DXILOp<22, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -522,6 +534,7 @@ def Log2 :  DXILOp<23, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -535,6 +548,7 @@ def Sqrt :  DXILOp<24, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -548,6 +562,7 @@ def RSqrt :  DXILOp<25, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -561,6 +576,7 @@ def Round :  DXILOp<26, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -574,6 +590,7 @@ def Floor :  DXILOp<27, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -587,6 +604,7 @@ def Ceil :  DXILOp<28, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -599,6 +617,7 @@ def Trunc :  DXILOp<29, unary> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -612,6 +631,7 @@ def Rbits :  DXILOp<30, unary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -625,6 +645,7 @@ def FMax :  DXILOp<35, binary> {
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty, llvm_double_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -638,6 +659,7 @@ def FMin :  DXILOp<36, binary> {
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty, llvm_double_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -651,6 +673,7 @@ def SMax :  DXILOp<37, binary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -664,6 +687,7 @@ def SMin :  DXILOp<38, binary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -677,6 +701,7 @@ def UMax :  DXILOp<39, binary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -690,6 +715,7 @@ def UMin :  DXILOp<40, binary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -704,6 +730,7 @@ def FMad :  DXILOp<46, tertiary> {
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty, llvm_double_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -718,6 +745,7 @@ def IMad :  DXILOp<48, tertiary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -732,6 +760,7 @@ def UMad :  DXILOp<49, tertiary> {
                    [Overloads<[llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>]>];
   let overloads =
       [VersionedOverloads<DXIL1_0, [llvm_i16_ty, llvm_i32_ty, llvm_i64_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -745,6 +774,7 @@ def Dot2 :  DXILOp<54, dot2> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -758,6 +788,7 @@ def Dot3 :  DXILOp<55, dot3> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
@@ -771,6 +802,7 @@ def Dot4 :  DXILOp<56, dot4> {
     Constraints<Enabled<DXIL1_0>, [Overloads<[llvm_half_ty, llvm_float_ty]>]>
   ];
   let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let attributes = [ReadNone];
 }
 
