@@ -399,7 +399,7 @@ static std::string getConstraintString(const SmallVector<Record *> Recs) {
   return ConstraintString;
 }
 
-#if 0
+#if 1
 /// Return a string representation of valid overload information denoted
 // by input records
 //
@@ -416,31 +416,29 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   // b) has no overload types
   // c) is supported in all shader stage kinds
   if (Recs.empty()) {
-    ConstraintString.append(
-        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::all_stages}}");
+    MaskString.append(
+        "{{1, 0}, OverloadKind::UNDEFINED}}");
   }
-  for (auto ConstrRec : Recs) {
-    auto SMConstrRec = ConstrRec->getValueAsDef("pred");
+  for (auto OlRec : Recs) {
     unsigned Major =
-        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+        OlRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
     unsigned Minor =
-        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    ConstraintString.append(Prefix).append("{{")
+        OlRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    MaskString.append(Prefix).append("{{")
         .append(std::to_string(Major))
         .append(", ")
         .append(std::to_string(Minor).append("}, "));
 
-    auto ConstraintList = ConstrRec->getValueAsListOfDefs("constraints");
+    // auto ConstraintList = OlRec->getValueAsListOfDefs("constraints");
     std::string OverloadMaskString = "";
-    std::string StageMaskString = "";
-    for (auto Constr : ConstraintList) {
+    // for (auto Constr : ConstraintList) {
       // All Constraints are specified as anonymous records.
-      assert(Constr->isAnonymous() &&
-             "Constraint Specification Record expected to be anonymous");
+      // assert(Constr->isAnonymous() &&
+      //       "Constraint Specification Record expected to be anonymous");
       // Generate Overload mask for constraint of class Overloads
-      if (!Constr->getType()->getAsString().compare("Overloads")) {
+      // if (!Constr->getType()->getAsString().compare("Overloads")) {
         std::string PipePrefix = "";
-        auto OLTys = Constr->getValueAsListOfDefs("overload_types");
+        auto OLTys = OlRec->getValueAsListOfDefs("overload_types");
         if (OLTys.empty()) {
           OverloadMaskString.append("OverloadKind::UNDEFINED");
         }
@@ -448,37 +446,18 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
           OverloadMaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
           PipePrefix = " | ";
         }
-      }
-      // Generate Shader Kind mask from Shader Stages constraints
-      if (!Constr->getType()->getAsString().compare("Stages")) {
-        std::string PipePrefix = "";
-        auto Stages = Constr->getValueAsListOfDefs("stage_kinds");
-        if (Stages.empty()) {
-          StageMaskString.append("ShaderKind::all_stages");
-        }
-        for (const auto *S : Stages) {
-          StageMaskString.append(PipePrefix)
-              .append("ShaderKind::")
-              .append(S->getName());
-          PipePrefix = " | ";
-        }
-      }
-    }
+      // }
+    // }
     if (OverloadMaskString.empty()) {
       OverloadMaskString.append(" OverloadKind::UNDEFINED ");
     }
-    if (StageMaskString.empty()) {
-      StageMaskString.append(" ShaderKind::all_stages ");
-    }
 
-    ConstraintString.append(OverloadMaskString)
-        .append(", ")
-        .append(StageMaskString);
-    ConstraintString.append("}");
+    MaskString.append(OverloadMaskString);
+    MaskString.append("}");
     Prefix = ", ";
   }
-  ConstraintString.append("}");
-  return ConstraintString;
+  MaskString.append("}");
+  return MaskString;
 }
 #endif
 
@@ -620,6 +599,7 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
+    OS << " \n// " << getOverloadMaskString(Op.OverloadRecs) << "\n";
   }
   OS << "  };\n";
 
