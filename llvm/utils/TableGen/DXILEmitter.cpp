@@ -720,6 +720,7 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass << ", "
        << OpClassStrings.get(Op.OpClass.data()) << ", "
        << getConstraintString(Op.Constraints) << ", "
+       << getAttributeMaskString(Op.AttrRecs) << ", "
        << emitDXILOperationAttr(Op.OpAttributes) << ", "
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
@@ -824,8 +825,8 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   // OverloadKindList. This gives the flexibility to just add new supported
   // types to the list above, if needed, with no need to change this backend
   // code.
-  unsigned OverloadKindCount = PowerOf2Ceil(OverloadKindList.size());
-  OS << "enum OverloadKind : uint" << OverloadKindCount << "_t {\n";
+  unsigned OverloadTySz = PowerOf2Ceil(OverloadKindList.size());
+  OS << "enum OverloadKind : uint" << OverloadTySz << "_t {\n";
   OS << "    UNDEFINED = 0,\n";
   shiftVal = 1;
   for (auto TyStr : OverloadKindList) {
@@ -844,15 +845,29 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   // constraints predicated on shader model version, if any.
   OS << "struct OpConstraints { \n"
      << "    Version DXILVersion; \n"
-     << "    uint" << OverloadKindCount << "_t ValidTys; \n"
+     << "    uint" << OverloadTySz << "_t ValidTys; \n"
      << "    uint" << ShaderKindTySz << "_t ValidShaderKinds; \n"
      << "};\n\n";
 
-  // Emit struct OpOverloads that encapsulate valid overload information
+  // Emit struct OpOverload that encapsulate valid overload information
   // predicated by DXIL version.
   OS << "struct OpOverload { \n"
      << "    Version DXILVersion; \n"
-     << "    uint" << OverloadKindCount << "_t ValidTys; \n"
+     << "    uint" << OverloadTySz << "_t ValidTys; \n"
+     << "};\n\n";
+
+  // Emit struct OpStage that encapsulate valid shader stage information
+  // predicated by DXIL version.
+  OS << "struct OpStage { \n"
+     << "    Version DXILVersion; \n"
+     << "    uint" << ShaderKindTySz << "_t ValidStages; \n"
+     << "};\n\n";
+
+  // Emit struct OpStage that encapsulate valid shader attribute information
+  // predicated by DXIL version.
+  OS << "struct OpAttribute { \n"
+     << "    Version DXILVersion; \n"
+     << "    uint32_t ValidAttrs; \n"
      << "};\n\n";
 
   // Emit struct OpCodeProperty record that encapsulates DXIL Op information.
@@ -864,7 +879,7 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
      << "  // Offset in DXILOpCodeClassNameTable. \n"
      << "  unsigned OpCodeClassNameOffset; \n"
      << "  std::vector<OpConstraints> Constraints; \n"
-     // << "  std::vector<OpOverload> Overloads; \n"
+     << "  std::vector<OpAttribute> Attributes; \n"
      << "  llvm::Attribute::AttrKind FuncAttr; \n"
      << "  int OverloadParamIndex;        // parameter index which control the overload. \n"
      << "                                // When < 0, should be only 1 overload type. \n"
