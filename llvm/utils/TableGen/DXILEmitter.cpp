@@ -251,6 +251,29 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     StageRecs.push_back(CR);
   }
 
+  // Get attribute records
+  Recs = R->getValueAsListOfDefs("versioned_attributes");
+
+  // Sort records in ascending order of DXIL version
+  std::sort(Recs.begin(), Recs.end(),
+            [](Record *RecA, Record *RecB) {
+              unsigned RecAMaj = RecA->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Major");
+              unsigned RecAMin = RecA->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Minor");
+              unsigned RecBMaj = RecB->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Major");
+              unsigned RecBMin = RecB->getValueAsDef("dxil_version")
+                                     ->getValueAsInt("Minor");
+
+              return (VersionTuple(RecAMaj, RecAMin) <
+                      VersionTuple(RecBMaj, RecBMin));
+            });
+
+  for (Record *CR : Recs) {
+    AttrRecs.push_back(CR);
+  }
+
   // Get the operation class
   OpClass = R->getValueAsDef("OpClass")->getName();
 
@@ -446,41 +469,36 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   if (Recs.empty()) {
     MaskString.append(
         "{{1, 0}, OverloadKind::UNDEFINED}}");
-  }
-  for (auto OlRec : Recs) {
+  } else {
+  for (auto Rec : Recs) {
     unsigned Major =
-        OlRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
     unsigned Minor =
-        OlRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
     MaskString.append(Prefix).append("{{")
         .append(std::to_string(Major))
         .append(", ")
         .append(std::to_string(Minor).append("}, "));
 
-    // auto ConstraintList = OlRec->getValueAsListOfDefs("constraints");
-    std::string OverloadMaskString = "";
-        std::string PipePrefix = "";
-        auto OLTys = OlRec->getValueAsListOfDefs("overload_types");
-        if (OLTys.empty()) {
-          OverloadMaskString.append("OverloadKind::UNDEFINED");
-        }
-        for (const auto *Ty : OLTys) {
-          OverloadMaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
-          PipePrefix = " | ";
-        }
-    if (OverloadMaskString.empty()) {
-      OverloadMaskString.append(" OverloadKind::UNDEFINED ");
+    std::string PipePrefix = "";
+    auto Tys = Rec->getValueAsListOfDefs("overload_types");
+    if (Tys.empty()) {
+      MaskString.append("OverloadKind::UNDEFINED");
+    }
+    for (const auto *Ty : Tys) {
+      MaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
+      PipePrefix = " | ";
     }
 
-    MaskString.append(OverloadMaskString);
     MaskString.append("}");
     Prefix = ", ";
+  }
   }
   MaskString.append("}");
   return MaskString;
 }
 
-/// Return a string representation of valid shader stage information denoted
+/// Return a string representation of valid shader stag information denoted
 // by input records
 //
 /// \param Recs A vector of records of TableGen Stages records
@@ -497,20 +515,18 @@ static std::string getStageMaskString(const SmallVector<Record *> Recs) {
         /*gen_crash_diag*/ false);
   }
 
-  for (auto StRec : Recs) {
+  for (auto Rec : Recs) {
     unsigned Major =
-        StRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
     unsigned Minor =
-        StRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
     MaskString.append(Prefix).append("{{")
         .append(std::to_string(Major))
         .append(", ")
         .append(std::to_string(Minor).append("}, "));
 
-    // auto ConstraintList = OlRec->getValueAsListOfDefs("constraints");
-    std::string StageMaskString = "";
     std::string PipePrefix = "";
-    auto Stages = StRec->getValueAsListOfDefs("shader_stages");
+    auto Stages = Rec->getValueAsListOfDefs("shader_stages");
     if (Stages.empty()) {
       report_fatal_error("No valid stages for operation specified",
                           /*gen_crash_diag*/ false);
@@ -522,7 +538,65 @@ static std::string getStageMaskString(const SmallVector<Record *> Recs) {
       PipePrefix = " | ";
     }
 
-    MaskString.append(StageMaskString);
+    MaskString.append("}");
+    Prefix = ", ";
+  }
+  MaskString.append("}");
+  return MaskString;
+}
+
+/// Convert operation attribute string to Attribute enum
+///
+/// \param Attr string reference
+/// \return std::string Attribute enum string
+
+static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
+  for (auto Attr : Attrs) {
+    // TODO: For now just recognize IntrNoMem and IntrReadMem as valid and
+    //  ignore others.
+    if (Attr == "IntrNoMem") {
+      return "Attribute::ReadNone";
+    } else if (Attr == "IntrReadMem") {
+      return "Attribute::ReadOnly";
+    }
+  }
+  return "Attribute::None";
+}
+
+/// Return a string representation of valid attribute information denoted
+// by input records
+//
+/// \param Recs A vector of records of TableGen Attribute records
+/// \return std::string string representation of stages mask string
+///         predicated by DXIL Version. E.g.,
+//          {{{1, 0}, Mask1}, {{1, 2}, Mask2}, ...}
+static std::string getAttributeMaskString(const SmallVector<Record *> Recs) {
+  std::string MaskString = "";
+  std::string Prefix = "";
+  MaskString.append("{");
+
+  for (auto Rec : Recs) {
+    unsigned Major =
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned Minor =
+        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    MaskString.append(Prefix).append("{{")
+        .append(std::to_string(Major))
+        .append(", ")
+        .append(std::to_string(Minor).append("}, "));
+
+    std::string PipePrefix = "";
+    auto Attrs = Rec->getValueAsListOfDefs("attributes");
+    if (Attrs.empty()) {
+      MaskString.append("Attribute::None");
+    } else {
+    for (const auto *Attr : Attrs) {
+      MaskString.append(PipePrefix)
+                     .append("Attribute::").append(Attr->getName());
+      PipePrefix = " | ";
+    }
+    }
+
     MaskString.append("}");
     Prefix = ", ";
   }
@@ -584,24 +658,6 @@ static void emitDXILIntrinsicMap(std::vector<DXILOperationDesc> &Ops,
   }
   OS << "};\n\n";
   OS << "#endif // DXIL_OP_INTRINSIC_MAP\n";
-}
-
-/// Convert operation attribute string to Attribute enum
-///
-/// \param Attr string reference
-/// \return std::string Attribute enum string
-
-static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
-  for (auto Attr : Attrs) {
-    // TODO: For now just recognize IntrNoMem and IntrReadMem as valid and
-    //  ignore others.
-    if (Attr == "IntrNoMem") {
-      return "Attribute::ReadNone";
-    } else if (Attr == "IntrReadMem") {
-      return "Attribute::ReadOnly";
-    }
-  }
-  return "Attribute::None";
 }
 
 /// Emit DXIL operation table
@@ -668,8 +724,9 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
-    OS << "\n// " << getOverloadMaskString(Op.OverloadRecs) << "\n";
-    OS << "// " << getStageMaskString(Op.StageRecs) << "\n";
+    OS << "\n// " << getOverloadMaskString(Op.OverloadRecs) << "\n"
+       << "// " << getStageMaskString(Op.StageRecs) << "\n"
+       << "// " << getAttributeMaskString(Op.AttrRecs) << "\n";
   }
   OS << "  };\n";
 
