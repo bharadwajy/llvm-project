@@ -223,7 +223,6 @@ defset list<DXILOpClass> OpClasses = {
   def UnknownOpClass : DXILOpClass;
 }
 
-// Shader stages
 class DXILShaderStage;
 
 def compute : DXILShaderStage;
@@ -243,6 +242,24 @@ def closesthit : DXILShaderStage;
 def callable : DXILShaderStage;
 def miss : DXILShaderStage;
 
+// Pseudo-stages
+// Denote DXIL Op to be supported in all stages
+def all_stages : DXILShaderStage;
+// Denote support for DXIL Op to have been removed
+def removed : DXILShaderStage;
+// DXIL Op attributes
+
+class DXILAttribute;
+
+def ReadOnly : DXILAttribute;
+def ReadNone : DXILAttribute;
+def IsDerivative : DXILAttribute;
+def IsGradient : DXILAttribute;
+def IsFeedback : DXILAttribute;
+def IsWave : DXILAttribute;
+def NeedsUniformInputs : DXILAttribute;
+def IsBarrier : DXILAttribute;
+
 // Primitive predicate
 class Pred;
 
@@ -251,12 +268,6 @@ class Pred;
 
 // Predicate that specifies minimum DXIL Version of operation validity.
 class Enabled<Version ver> : Pred {
-  Version dxil_version = ver;
-}
-
-// Predicate that specifies minimum DXIL Version of operation from which
-// it is no longer valid.
-class Removed<Version ver> : Pred {
   Version dxil_version = ver;
 }
 
@@ -288,19 +299,6 @@ class VersionedStages<Version ver, list<DXILShaderStage> st> {
   list<DXILShaderStage> shader_stages = st;
 }
 
-// DXIL Op attributes defined as true predicates, if specified
-
-class DXILAttribute;
-
-def ReadOnly : DXILAttribute;
-def ReadNone : DXILAttribute;
-def IsDerivative : DXILAttribute;
-def IsGradient : DXILAttribute;
-def IsFeedback : DXILAttribute;
-def IsWave : DXILAttribute;
-def NeedsUniformInputs : DXILAttribute;
-def IsBarrier : DXILAttribute;
-
 class VersionedAttributes<Version ver = DXIL1_0, list<DXILAttribute> attrs> {
   Version dxil_version = ver;
   list<DXILAttribute> attributes = attrs;
@@ -321,7 +319,7 @@ class DXILOp<int opcode, DXILOpClass opclass> {
   DXILOpClass OpClass = opclass;
 
   // LLVM Intrinsic DXIL Operation maps to
-  Intrinsic LLVMIntrinsic = ? ;
+  Intrinsic LLVMIntrinsic = ?;
 
   // List of result types of the op. Default to 0 results.
   LLVMType result;
@@ -340,14 +338,14 @@ class DXILOp<int opcode, DXILOpClass opclass> {
 
   list<Constraints> constraints = [];
 
+  // Operation attributes
+  list<DXILAttribute> attributes = [];
+
   // List of valid overload types predicated by DXIL version
-  list<VersionedOverloads> overloads;
+  list<VersionedOverloads> overloads = [];
 
   // List of valid shader stages predicated by DXIL version
   list<VersionedStages> stages;
-
-  // Operation attributes
-  list<DXILAttribute> attributes = [];
 
   // Versioned attributes of operation
   list<VersionedAttributes> versioned_attributes = [];
@@ -363,8 +361,9 @@ def Abs :  DXILOp<6, unary> {
   let constraints =
       [Constraints<Enabled<DXIL1_0>,
                    [Overloads<[llvm_half_ty, llvm_float_ty, llvm_double_ty]>]>];
-  let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty, llvm_double_ty]>];
   let attributes = [ReadNone];
+  let overloads = [VersionedOverloads<DXIL1_0, [llvm_half_ty, llvm_float_ty, llvm_double_ty]>];
+  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
   let versioned_attributes = [VersionedAttributes<DXIL1_0, [ReadNone]>];
 }
 

@@ -28,6 +28,35 @@ constexpr StringLiteral DXILOpNamePrefix = "dx.op.";
 #include "DXILOperation.inc"
 #undef DXIL_OP_OPERATION_TABLE
 
+static const char *getOverloadTypeName(OverloadKind Kind) {
+     switch (Kind) {
+     case OverloadKind::HALF:
+       return "f16";
+     case OverloadKind::FLOAT:
+       return "f32";
+     case OverloadKind::DOUBLE:
+       return "f64";
+     case OverloadKind::I1:
+       return "i1";
+     case OverloadKind::I8:
+       return "i8";
+     case OverloadKind::I16:
+       return "i16";
+     case OverloadKind::I32:
+       return "i32";
+     case OverloadKind::I64:
+       return "i64";
+     case OverloadKind::VOID:
+     case OverloadKind::UNDEFINED:
+       return "void";
+     case OverloadKind::ObjectType:
+     case OverloadKind::UserDefineType:
+       break;
+     }
+     llvm_unreachable("invalid overload type for name");
+}
+
+
 static OverloadKind getOverloadKind(Type *Ty) {
   Type::TypeID T = Ty->getTypeID();
   switch (T) {
