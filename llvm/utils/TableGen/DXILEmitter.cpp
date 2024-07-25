@@ -215,7 +215,7 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   }
 
   // Get attribute records
-  Recs = R->getValueAsListOfDefs("versioned_attributes");
+  Recs = R->getValueAsListOfDefs("attributes");
 
   // Sort records in ascending order of DXIL version
   AscendingSortByVersion(Recs);
@@ -426,7 +426,7 @@ static std::string getAttributeMaskString(const SmallVector<Record *> Recs) {
         .append(std::to_string(Minor).append("}, "));
 
     std::string PipePrefix = "";
-    auto Attrs = Rec->getValueAsListOfDefs("attributes");
+    auto Attrs = Rec->getValueAsListOfDefs("op_attrs");
     if (Attrs.empty()) {
       MaskString.append("Attribute::None");
     } else {
