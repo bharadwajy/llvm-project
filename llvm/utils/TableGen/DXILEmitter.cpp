@@ -44,8 +44,6 @@ struct DXILOperationDesc {
   SmallVector<Record *> OverloadRecs;
   SmallVector<Record *> StageRecs;
   SmallVector<Record *> AttrRecs;
-  SmallVector<std::string>
-      OpAttributes;     // operation attribute represented as strings
   StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
                         // means no map exists
   SmallVector<StringRef, 4>
@@ -244,16 +242,6 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
       assert(DefName.starts_with("int_") && "invalid intrinsic name");
       // Remove the int_ from intrinsic name.
       Intrinsic = DefName.substr(4);
-      // TODO: For now, assume that attributes of DXIL Operation are the same as
-      // that of the intrinsic. Deviations are expected to be encoded in
-      // TableGen record specification and handled accordingly here. Support to
-      // be added as needed.
-      ListInit *IntrPropList =
-          IntrinsicDef->getValueAsListInit("IntrProperties");
-      auto IntrPropListSize = IntrPropList->size();
-      for (unsigned I = 0; I < IntrPropListSize; I++) {
-        OpAttributes.emplace_back(IntrPropList->getElement(I)->getAsString());
-      }
     }
   }
 }
@@ -416,24 +404,6 @@ static std::string getStageMaskString(const SmallVector<Record *> Recs) {
   return MaskString;
 }
 
-/// Convert operation attribute string to Attribute enum
-///
-/// \param Attr string reference
-/// \return std::string Attribute enum string
-
-static std::string emitDXILOperationAttr(SmallVector<std::string> Attrs) {
-  for (auto Attr : Attrs) {
-    // TODO: For now just recognize IntrNoMem and IntrReadMem as valid and
-    //  ignore others.
-    if (Attr == "IntrNoMem") {
-      return "Attribute::ReadNone";
-    } else if (Attr == "IntrReadMem") {
-      return "Attribute::ReadOnly";
-    }
-  }
-  return "Attribute::None";
-}
-
 /// Return a string representation of valid attribute information denoted
 // by input records
 //
@@ -593,7 +563,6 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << getOverloadMaskString(Op.OverloadRecs) << ", "
        << getStageMaskString(Op.StageRecs) << ", "
        << getAttributeMaskString(Op.AttrRecs) << ", "
-       << emitDXILOperationAttr(Op.OpAttributes) << ", "
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
@@ -745,7 +714,6 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
      << "  std::vector<OpOverload> Overloads; \n"
      << "  std::vector<OpStage> Stages; \n"
      << "  std::vector<OpAttribute> Attributes; \n"
-     << "  llvm::Attribute::AttrKind FuncAttr; \n"
      << "  int OverloadParamIndex;        // parameter index which control the "
         "overload. \n"
      << "                                // When < 0, should be only 1 "
