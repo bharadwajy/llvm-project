@@ -44,8 +44,8 @@ struct DXILOperationDesc {
   SmallVector<Record *> OverloadRecs;
   SmallVector<Record *> StageRecs;
   SmallVector<Record *> AttrRecs;
-  StringRef Intrinsic;  // The llvm intrinsic map to OpName. Default is "" which
-                        // means no map exists
+  StringRef Intrinsic; // The llvm intrinsic map to OpName. Default is "" which
+                       // means no map exists
   SmallVector<StringRef, 4>
       ShaderStages; // shader stages to which this applies, empty for all.
   int OverloadParamIndex;             // Index of parameter with overload type.
@@ -92,7 +92,7 @@ static ParameterKind getParameterKind(const Record *R) {
 /// In-place sort TableGen records of class with a field
 ///    Version dxil_version
 /// in the ascending version order.
-static void AscendingSortByVersion(std::vector<Record *>& Recs) {
+static void AscendingSortByVersion(std::vector<Record *> &Recs) {
   std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
     unsigned RecAMaj =
         RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
@@ -562,8 +562,8 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << OpClassStrings.get(Op.OpClass.data()) << ", "
        << getOverloadMaskString(Op.OverloadRecs) << ", "
        << getStageMaskString(Op.StageRecs) << ", "
-       << getAttributeMaskString(Op.AttrRecs) << ", "
-       << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
+       << getAttributeMaskString(Op.AttrRecs) << ", " << Op.OverloadParamIndex
+       << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
   }
