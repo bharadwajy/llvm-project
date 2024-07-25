@@ -174,20 +174,18 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   std::vector<Record *> Recs = R->getValueAsListOfDefs("overloads");
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(),
-            [](Record *RecA, Record *RecB) {
-              unsigned RecAMaj = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecAMin = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
-              unsigned RecBMaj = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecBMin = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
+  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
+    unsigned RecAMaj =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecAMin =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    unsigned RecBMaj =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecBMin =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
 
-              return (VersionTuple(RecAMaj, RecAMin) <
-                      VersionTuple(RecBMaj, RecBMin));
-            });
+    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
+  });
 
   for (Record *CR : Recs) {
     OverloadRecs.push_back(CR);
@@ -199,25 +197,24 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   if (Recs.empty()) {
     report_fatal_error(
         StringRef(std::string("Atleast one specification of valid stage for ")
-                      .append(OpName).append(" is required")),
+                      .append(OpName)
+                      .append(" is required")),
         /* gen_crash_diag=*/false);
   }
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(),
-            [](Record *RecA, Record *RecB) {
-              unsigned RecAMaj = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecAMin = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
-              unsigned RecBMaj = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecBMin = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
+  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
+    unsigned RecAMaj =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecAMin =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    unsigned RecBMaj =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecBMin =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
 
-              return (VersionTuple(RecAMaj, RecAMin) <
-                      VersionTuple(RecBMaj, RecBMin));
-            });
+    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
+  });
 
   for (Record *CR : Recs) {
     StageRecs.push_back(CR);
@@ -227,20 +224,18 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   Recs = R->getValueAsListOfDefs("versioned_attributes");
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(),
-            [](Record *RecA, Record *RecB) {
-              unsigned RecAMaj = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecAMin = RecA->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
-              unsigned RecBMaj = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecBMin = RecB->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
+  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
+    unsigned RecAMaj =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecAMin =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    unsigned RecBMaj =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecBMin =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
 
-              return (VersionTuple(RecAMaj, RecAMin) <
-                      VersionTuple(RecBMaj, RecBMin));
-            });
+    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
+  });
 
   for (Record *CR : Recs) {
     AttrRecs.push_back(CR);
@@ -360,33 +355,33 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
   // a) to be supported in DXIL Version 1.0 and later
   // b) has no overload types
   if (Recs.empty()) {
-    MaskString.append(
-        "{{1, 0}, OverloadKind::UNDEFINED}}");
+    MaskString.append("{{1, 0}, OverloadKind::UNDEFINED}}");
   } else {
-  for (auto Rec : Recs) {
-    unsigned Major =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned Minor =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    MaskString.append(Prefix).append("{{")
-        .append(std::to_string(Major))
-        .append(", ")
-        .append(std::to_string(Minor).append("}, "));
+    for (auto Rec : Recs) {
+      unsigned Major =
+          Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+      unsigned Minor =
+          Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+      MaskString.append(Prefix)
+          .append("{{")
+          .append(std::to_string(Major))
+          .append(", ")
+          .append(std::to_string(Minor).append("}, "));
 
-    std::string PipePrefix = "";
-    auto Tys = Rec->getValueAsListOfDefs("overload_types");
-    if (Tys.empty()) {
-      MaskString.append("OverloadKind::UNDEFINED");
-    }
-    for (const auto *Ty : Tys) {
-      MaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
-      PipePrefix = " | ";
-    }
+      std::string PipePrefix = "";
+      auto Tys = Rec->getValueAsListOfDefs("overload_types");
+      if (Tys.empty()) {
+        MaskString.append("OverloadKind::UNDEFINED");
+      }
+      for (const auto *Ty : Tys) {
+        MaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
+        PipePrefix = " | ";
+      }
 
+      MaskString.append("}");
+      Prefix = ", ";
+    }
     MaskString.append("}");
-    Prefix = ", ";
-  }
-  MaskString.append("}");
   }
   return MaskString;
 }
@@ -404,16 +399,16 @@ static std::string getStageMaskString(const SmallVector<Record *> Recs) {
   MaskString.append("{");
   // Atleast one stage information record is expected to be specified.
   if (Recs.empty()) {
-    report_fatal_error("Atleast one specification of valid stages for operation must be specified",
-        /*gen_crash_diag*/ false);
+    report_fatal_error("Atleast one specification of valid stages for "
+                       "operation must be specified",
+                       /*gen_crash_diag*/ false);
   }
 
   for (auto Rec : Recs) {
-    unsigned Major =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned Minor =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    MaskString.append(Prefix).append("{{")
+    unsigned Major = Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned Minor = Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    MaskString.append(Prefix)
+        .append("{{")
         .append(std::to_string(Major))
         .append(", ")
         .append(std::to_string(Minor).append("}, "));
@@ -422,12 +417,10 @@ static std::string getStageMaskString(const SmallVector<Record *> Recs) {
     auto Stages = Rec->getValueAsListOfDefs("shader_stages");
     if (Stages.empty()) {
       report_fatal_error("No valid stages for operation specified",
-                          /*gen_crash_diag*/ false);
+                         /*gen_crash_diag*/ false);
     }
     for (const auto *S : Stages) {
-      MaskString.append(PipePrefix)
-                     .append("ShaderKind::")
-                     .append(S->getName());
+      MaskString.append(PipePrefix).append("ShaderKind::").append(S->getName());
       PipePrefix = " | ";
     }
 
@@ -469,11 +462,10 @@ static std::string getAttributeMaskString(const SmallVector<Record *> Recs) {
   MaskString.append("{");
 
   for (auto Rec : Recs) {
-    unsigned Major =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned Minor =
-        Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    MaskString.append(Prefix).append("{{")
+    unsigned Major = Rec->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned Minor = Rec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    MaskString.append(Prefix)
+        .append("{{")
         .append(std::to_string(Major))
         .append(", ")
         .append(std::to_string(Minor).append("}, "));
@@ -483,11 +475,12 @@ static std::string getAttributeMaskString(const SmallVector<Record *> Recs) {
     if (Attrs.empty()) {
       MaskString.append("Attribute::None");
     } else {
-    for (const auto *Attr : Attrs) {
-      MaskString.append(PipePrefix)
-                     .append("Attribute::").append(Attr->getName());
-      PipePrefix = " | ";
-    }
+      for (const auto *Attr : Attrs) {
+        MaskString.append(PipePrefix)
+            .append("Attribute::")
+            .append(Attr->getName());
+        PipePrefix = " | ";
+      }
     }
 
     MaskString.append("}");
@@ -698,9 +691,12 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   for (auto R : ShaderKindRecs) {
     auto Name = R->getName();
     if (Name.compare(removed) == 0) {
-      OS << "  " << Name << " =  0,  // Pseudo-stage indicating op not supported in any stage\n";
+      OS << "  " << Name
+         << " =  0,  // Pseudo-stage indicating op not supported in any "
+            "stage\n";
     } else if (Name.compare(allStages) == 0) {
-      OS << "  " << Name << " =  0x" << utohexstr(((1 << ShaderKindCount) - 1), false, 0)
+      OS << "  " << Name << " =  0x"
+         << utohexstr(((1 << ShaderKindCount) - 1), false, 0)
          << ", // Pseudo-stage indicating op is supported in all stages\n";
     } else if (Name.compare(allStages)) {
       OS << "  " << Name << " = 1 << " << std::to_string(shiftVal++) << ",\n";
@@ -713,7 +709,7 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
 
   // Emit enum OverloadKind with valid overload types.
   const SmallVector<std::string> OverloadKindList = {
-      "VOID", "HALF", "FLOAT", "DOUBLE",          "I1",        "I8",
+      "VOID", "HALF", "FLOAT", "DOUBLE",         "I1",        "I8",
       "I16",  "I32",  "I64",   "UserDefineType", "ObjectType"};
   // Choose the type of enum OverloadKind based on the number of valid types in
   // OverloadKindList. This gives the flexibility to just add new supported
@@ -768,9 +764,12 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
      << "  std::vector<OpStage> Stages; \n"
      << "  std::vector<OpAttribute> Attributes; \n"
      << "  llvm::Attribute::AttrKind FuncAttr; \n"
-     << "  int OverloadParamIndex;        // parameter index which control the overload. \n"
-     << "                                // When < 0, should be only 1 overload type. \n"
-     << "  unsigned NumOfParameters;      // Number of parameters include return value. \n"
+     << "  int OverloadParamIndex;        // parameter index which control the "
+        "overload. \n"
+     << "                                // When < 0, should be only 1 "
+        "overload type. \n"
+     << "  unsigned NumOfParameters;      // Number of parameters include "
+        "return value. \n"
      << "  unsigned ParameterTableOffset; // Offset in ParameterTable. \n"
      << "};\n\n";
 }

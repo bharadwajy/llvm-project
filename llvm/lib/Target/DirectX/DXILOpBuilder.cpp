@@ -29,33 +29,32 @@ constexpr StringLiteral DXILOpNamePrefix = "dx.op.";
 #undef DXIL_OP_OPERATION_TABLE
 
 static const char *getOverloadTypeName(OverloadKind Kind) {
-     switch (Kind) {
-     case OverloadKind::HALF:
-       return "f16";
-     case OverloadKind::FLOAT:
-       return "f32";
-     case OverloadKind::DOUBLE:
-       return "f64";
-     case OverloadKind::I1:
-       return "i1";
-     case OverloadKind::I8:
-       return "i8";
-     case OverloadKind::I16:
-       return "i16";
-     case OverloadKind::I32:
-       return "i32";
-     case OverloadKind::I64:
-       return "i64";
-     case OverloadKind::VOID:
-     case OverloadKind::UNDEFINED:
-       return "void";
-     case OverloadKind::ObjectType:
-     case OverloadKind::UserDefineType:
-       break;
-     }
-     llvm_unreachable("invalid overload type for name");
+  switch (Kind) {
+  case OverloadKind::HALF:
+    return "f16";
+  case OverloadKind::FLOAT:
+    return "f32";
+  case OverloadKind::DOUBLE:
+    return "f64";
+  case OverloadKind::I1:
+    return "i1";
+  case OverloadKind::I8:
+    return "i8";
+  case OverloadKind::I16:
+    return "i16";
+  case OverloadKind::I32:
+    return "i32";
+  case OverloadKind::I64:
+    return "i64";
+  case OverloadKind::VOID:
+  case OverloadKind::UNDEFINED:
+    return "void";
+  case OverloadKind::ObjectType:
+  case OverloadKind::UserDefineType:
+    break;
+  }
+  llvm_unreachable("invalid overload type for name");
 }
-
 
 static OverloadKind getOverloadKind(Type *Ty) {
   Type::TypeID T = Ty->getTypeID();
@@ -258,15 +257,14 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
 }
 
 static int getOverloadPropIndex(const OpCodeProperty *Prop,
-                                     const VersionTuple DXILVer) {
+                                const VersionTuple DXILVer) {
   // std::vector Prop->Overloads is in ascending order of DXIL Version
   // Overloads of highest DXIL version that is not greater than DXILVer
   // are the ones that are valid for DXILVer.
   auto Size = Prop->Overloads.size();
   for (int I = Size - 1; I >= 0; I--) {
     auto OL = Prop->Overloads[I];
-    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <=
-        DXILVer) {
+    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <= DXILVer) {
       return I;
     }
   }
@@ -278,15 +276,14 @@ static int getOverloadPropIndex(const OpCodeProperty *Prop,
 }
 
 static int getStagePropIndex(const OpCodeProperty *Prop,
-                                     const VersionTuple DXILVer) {
+                             const VersionTuple DXILVer) {
   // std::vector Prop->Stages is in ascending order of DXIL Version
   // Overloads of highest DXIL version that is not greater than DXILVer
   // are the ones that are valid for DXILVer.
   auto Size = Prop->Stages.size();
   for (int I = Size - 1; I >= 0; I--) {
     auto OL = Prop->Stages[I];
-    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <=
-        DXILVer) {
+    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <= DXILVer) {
       return I;
     }
   }
@@ -352,7 +349,8 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
     report_fatal_error(
         StringRef(
             DXILVer.getAsString()
-                .append(": Unsupported Target Shader Stage for DXIL operation - ")
+                .append(
+                    ": Unsupported Target Shader Stage for DXIL operation - ")
                 .append(getOpCodeName((OpCode)))),
         /*gen_crash_diag*/ false);
   }
