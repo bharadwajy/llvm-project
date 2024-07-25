@@ -493,8 +493,8 @@ static std::string getOverloadMaskString(const SmallVector<Record *> Recs) {
     MaskString.append("}");
     Prefix = ", ";
   }
-  }
   MaskString.append("}");
+  }
   return MaskString;
 }
 
@@ -720,6 +720,8 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass << ", "
        << OpClassStrings.get(Op.OpClass.data()) << ", "
        << getConstraintString(Op.Constraints) << ", "
+       << getOverloadMaskString(Op.OverloadRecs) << ", "
+       << getStageMaskString(Op.StageRecs) << ", "
        << getAttributeMaskString(Op.AttrRecs) << ", "
        << emitDXILOperationAttr(Op.OpAttributes) << ", "
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
@@ -879,6 +881,8 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
      << "  // Offset in DXILOpCodeClassNameTable. \n"
      << "  unsigned OpCodeClassNameOffset; \n"
      << "  std::vector<OpConstraints> Constraints; \n"
+     << "  std::vector<OpOverload> Overloads; \n"
+     << "  std::vector<OpStage> Stages; \n"
      << "  std::vector<OpAttribute> Attributes; \n"
      << "  llvm::Attribute::AttrKind FuncAttr; \n"
      << "  int OverloadParamIndex;        // parameter index which control the overload. \n"
