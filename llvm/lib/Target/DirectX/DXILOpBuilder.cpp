@@ -257,31 +257,9 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
       ArgTys[0], ArrayRef<Type *>(&ArgTys[1], ArgTys.size() - 1), false);
 }
 
-#if 0
-static int getValidConstraintIndex(const OpCodeProperty *Prop,
-                                   const VersionTuple DXILVer) {
-  // std::vector Prop->Constraints is in ascending order of DXIL Version
-  // Overloads of highest DXIL version that is not greater than DXILVer
-  // are the ones that are valid for DXILVer.
-  auto Size = Prop->Constraints.size();
-  for (int I = Size - 1; I >= 0; I--) {
-    auto OL = Prop->Constraints[I];
-    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <=
-        DXILVer) {
-      return I;
-    }
-  }
-  report_fatal_error(
-      StringRef(DXILVer.getAsString().append(": Unknown DXIL Version")),
-      /*gen_crash_diag*/ false);
-
-  return -1;
-}
-#endif
-
-static int getValidOLConstraintIndex(const OpCodeProperty *Prop,
+static int getOverloadPropIndex(const OpCodeProperty *Prop,
                                      const VersionTuple DXILVer) {
-  // std::vector Prop->Constraints is in ascending order of DXIL Version
+  // std::vector Prop->Overloads is in ascending order of DXIL Version
   // Overloads of highest DXIL version that is not greater than DXILVer
   // are the ones that are valid for DXILVer.
   auto Size = Prop->Overloads.size();
@@ -299,9 +277,9 @@ static int getValidOLConstraintIndex(const OpCodeProperty *Prop,
   return -1;
 }
 
-static int getValidStageConstraintIndex(const OpCodeProperty *Prop,
+static int getStagePropIndex(const OpCodeProperty *Prop,
                                      const VersionTuple DXILVer) {
-  // std::vector Prop->Constraints is in ascending order of DXIL Version
+  // std::vector Prop->Stages is in ascending order of DXIL Version
   // Overloads of highest DXIL version that is not greater than DXILVer
   // are the ones that are valid for DXILVer.
   auto Size = Prop->Stages.size();
@@ -340,8 +318,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   auto ShaderEnvStr = Triple(TTStr).getEnvironmentName();
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
-  int OlIndex = getValidOLConstraintIndex(Prop, DXILVer);
-  // uint16_t ValidTyMask = Prop->Constraints[Index].ValidTys;
+  int OlIndex = getOverloadPropIndex(Prop, DXILVer);
   uint16_t ValidTyMask = Prop->Overloads[OlIndex].ValidTys;
 
   OverloadKind Kind = getOverloadKind(OverloadTy);
@@ -366,11 +343,11 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
 
   // Perform necessary checks to ensure Opcode is valid in the targeted shader
   // kind
-  int StIndex = getValidStageConstraintIndex(Prop, DXILVer);
+  int StIndex = getStagePropIndex(Prop, DXILVer);
   uint16_t ValidShaderKindMask = Prop->Stages[StIndex].ValidStages;
   enum ShaderKind ModuleStagekind = getShaderKindEnum(ShaderEnv);
 
-  // Ensure valid shader stage constraints are specified
+  // Ensure valid shader stage properties are specified
   if (ValidShaderKindMask == ShaderKind::removed) {
     report_fatal_error(
         StringRef(

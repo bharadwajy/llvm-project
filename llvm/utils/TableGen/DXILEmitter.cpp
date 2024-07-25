@@ -41,8 +41,6 @@ struct DXILOperationDesc {
   StringRef Doc;      // the documentation description of this instruction
   // Vector of operand type records - return type is at index 0
   SmallVector<Record *> OpTypes;
-  // Vector of operation constraint records
-  SmallVector<Record *> Constraints;
   SmallVector<Record *> OverloadRecs;
   SmallVector<Record *> StageRecs;
   SmallVector<Record *> AttrRecs;
@@ -170,32 +168,6 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     assert(OverloadParamIndices.size() == 1 &&
            "Multiple overload type specification not supported");
     OverloadParamIndex = OverloadParamIndices[0];
-  }
-  // Get Constraint Records
-  std::vector<Record *> ConstrintRecs = R->getValueAsListOfDefs("constraints");
-
-  // Sort records in ascending order of Shader Model version
-  std::sort(ConstrintRecs.begin(), ConstrintRecs.end(),
-            [](Record *RecA, Record *RecB) {
-              unsigned RecAMaj = RecA->getValueAsDef("pred")
-                                     ->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecAMin = RecA->getValueAsDef("pred")
-                                     ->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
-              unsigned RecBMaj = RecB->getValueAsDef("pred")
-                                     ->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Major");
-              unsigned RecBMin = RecB->getValueAsDef("pred")
-                                     ->getValueAsDef("dxil_version")
-                                     ->getValueAsInt("Minor");
-
-              return (VersionTuple(RecAMaj, RecAMin) <
-                      VersionTuple(RecBMaj, RecBMin));
-            });
-
-  for (Record *CR : ConstrintRecs) {
-    Constraints.push_back(CR);
   }
 
   // Get ovberload records
@@ -371,85 +343,6 @@ static std::string getOverloadKindStr(const Record *R) {
     llvm_unreachable("Support for specified fixed type option for overload "
                      "type not supported");
   }
-}
-
-/// Return a string representation of constraints specified for the DXIL
-/// Operation
-//
-/// \param Recs A vector of records of TableGen class type DXILShaderModel
-/// \return std::string string representation of OverloadKind
-static std::string getConstraintString(const SmallVector<Record *> Recs) {
-  std::string ConstraintString = "";
-  std::string Prefix = "";
-  ConstraintString.append("{");
-  // If no constraints were specified, assume the operation
-  // a) to be supported in DXIL Version 1.0 and later
-  // b) has no overload types
-  // c) is supported in all shader stage kinds
-  if (Recs.empty()) {
-    ConstraintString.append(
-        "{{1, 0}, OverloadKind::UNDEFINED, ShaderKind::all_stages}}");
-  }
-  for (auto ConstrRec : Recs) {
-    auto SMConstrRec = ConstrRec->getValueAsDef("pred");
-    unsigned Major =
-        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned Minor =
-        SMConstrRec->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    ConstraintString.append(Prefix).append("{{")
-        .append(std::to_string(Major))
-        .append(", ")
-        .append(std::to_string(Minor).append("}, "));
-
-    auto ConstraintList = ConstrRec->getValueAsListOfDefs("constraints");
-    std::string OverloadMaskString = "";
-    std::string StageMaskString = "";
-    for (auto Constr : ConstraintList) {
-      // All Constraints are specified as anonymous records.
-      assert(Constr->isAnonymous() &&
-             "Constraint Specification Record expected to be anonymous");
-      // Generate Overload mask for constraint of class Overloads
-      if (!Constr->getType()->getAsString().compare("Overloads")) {
-        std::string PipePrefix = "";
-        auto OLTys = Constr->getValueAsListOfDefs("overload_types");
-        if (OLTys.empty()) {
-          OverloadMaskString.append("OverloadKind::UNDEFINED");
-        }
-        for (const auto *Ty : OLTys) {
-          OverloadMaskString.append(PipePrefix).append(getOverloadKindStr(Ty));
-          PipePrefix = " | ";
-        }
-      }
-      // Generate Shader Kind mask from Shader Stages constraints
-      if (!Constr->getType()->getAsString().compare("Stages")) {
-        std::string PipePrefix = "";
-        auto Stages = Constr->getValueAsListOfDefs("stage_kinds");
-        if (Stages.empty()) {
-          StageMaskString.append("ShaderKind::all_stages");
-        }
-        for (const auto *S : Stages) {
-          StageMaskString.append(PipePrefix)
-              .append("ShaderKind::")
-              .append(S->getName());
-          PipePrefix = " | ";
-        }
-      }
-    }
-    if (OverloadMaskString.empty()) {
-      OverloadMaskString.append(" OverloadKind::UNDEFINED ");
-    }
-    if (StageMaskString.empty()) {
-      StageMaskString.append(" ShaderKind::all_stages ");
-    }
-
-    ConstraintString.append(OverloadMaskString)
-        .append(", ")
-        .append(StageMaskString);
-    ConstraintString.append("}");
-    Prefix = ", ";
-  }
-  ConstraintString.append("}");
-  return ConstraintString;
 }
 
 /// Return a string representation of valid overload information denoted
@@ -719,7 +612,6 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
     OS << Prefix << "  { dxil::OpCode::" << Op.OpName << ", "
        << OpStrings.get(Op.OpName) << ", OpCodeClass::" << Op.OpClass << ", "
        << OpClassStrings.get(Op.OpClass.data()) << ", "
-       << getConstraintString(Op.Constraints) << ", "
        << getOverloadMaskString(Op.OverloadRecs) << ", "
        << getStageMaskString(Op.StageRecs) << ", "
        << getAttributeMaskString(Op.AttrRecs) << ", "
@@ -836,20 +728,12 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
   }
   OS << "  }; \n";
 
-  // Emit a convenience struct Version to encode Shader Model version specified
-  // in constraints
+  // Emit a convenience struct Version to encode DXIL version that
+  // predicates overload and stage properties as well as attributes
   OS << "struct Version { \n"
         "   unsigned Major = 0; \n"
         "   unsigned Minor = 0; \n"
         "};\n\n";
-
-  // Emit struct Constraints that encapsulate overload and shader kind
-  // constraints predicated on shader model version, if any.
-  OS << "struct OpConstraints { \n"
-     << "    Version DXILVersion; \n"
-     << "    uint" << OverloadTySz << "_t ValidTys; \n"
-     << "    uint" << ShaderKindTySz << "_t ValidShaderKinds; \n"
-     << "};\n\n";
 
   // Emit struct OpOverload that encapsulate valid overload information
   // predicated by DXIL version.
@@ -880,7 +764,6 @@ static void emitDXILOperationTableDataStructs(RecordKeeper &Records,
      << "  dxil::OpCodeClass OpCodeClass; \n"
      << "  // Offset in DXILOpCodeClassNameTable. \n"
      << "  unsigned OpCodeClassNameOffset; \n"
-     << "  std::vector<OpConstraints> Constraints; \n"
      << "  std::vector<OpOverload> Overloads; \n"
      << "  std::vector<OpStage> Stages; \n"
      << "  std::vector<OpAttribute> Attributes; \n"
