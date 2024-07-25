@@ -28,6 +28,34 @@ constexpr StringLiteral DXILOpNamePrefix = "dx.op.";
 #include "DXILOperation.inc"
 #undef DXIL_OP_OPERATION_TABLE
 
+static const char *getOverloadTypeName(OverloadKind Kind) {
+  switch (Kind) {
+  case OverloadKind::HALF:
+    return "f16";
+  case OverloadKind::FLOAT:
+    return "f32";
+  case OverloadKind::DOUBLE:
+    return "f64";
+  case OverloadKind::I1:
+    return "i1";
+  case OverloadKind::I8:
+    return "i8";
+  case OverloadKind::I16:
+    return "i16";
+  case OverloadKind::I32:
+    return "i32";
+  case OverloadKind::I64:
+    return "i64";
+  case OverloadKind::VOID:
+  case OverloadKind::UNDEFINED:
+    return "void";
+  case OverloadKind::ObjectType:
+  case OverloadKind::UserDefineType:
+    break;
+  }
+  llvm_unreachable("invalid overload type for name");
+}
+
 static OverloadKind getOverloadKind(Type *Ty) {
   Type::TypeID T = Ty->getTypeID();
   switch (T) {
@@ -228,16 +256,16 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
       ArgTys[0], ArrayRef<Type *>(&ArgTys[1], ArgTys.size() - 1), false);
 }
 
-static int getValidConstraintIndex(const OpCodeProperty *Prop,
-                                   const VersionTuple DXILVer) {
-  // std::vector Prop->Constraints is in ascending order of DXIL Version
-  // Overloads of highest DXIL version that is not greater than DXILVer
-  // are the ones that are valid for DXILVer.
-  auto Size = Prop->Constraints.size();
+/// Get index of the property from PropList valid for the most recent
+/// DXIL version not greater than DXILVer.
+/// PropList is expected to be sorted in ascending order of DXIL version.
+template <typename T>
+static int getPropIndex(const std::vector<T> PropList,
+                        const VersionTuple DXILVer) {
+  auto Size = PropList.size();
   for (int I = Size - 1; I >= 0; I--) {
-    auto OL = Prop->Constraints[I];
-    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <=
-        DXILVer) {
+    auto OL = PropList[I];
+    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <= DXILVer) {
       return I;
     }
   }
@@ -269,8 +297,8 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   auto ShaderEnvStr = Triple(TTStr).getEnvironmentName();
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
-  int Index = getValidConstraintIndex(Prop, DXILVer);
-  uint16_t ValidTyMask = Prop->Constraints[Index].ValidTys;
+  int OlIndex = getPropIndex(Prop->Overloads, DXILVer);
+  uint16_t ValidTyMask = Prop->Overloads[OlIndex].ValidTys;
 
   OverloadKind Kind = getOverloadKind(OverloadTy);
 
@@ -294,26 +322,23 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
 
   // Perform necessary checks to ensure Opcode is valid in the targeted shader
   // kind
-  uint16_t ValidShaderKindMask = Prop->Constraints[Index].ValidShaderKinds;
+  int StIndex = getPropIndex(Prop->Stages, DXILVer);
+  uint16_t ValidShaderKindMask = Prop->Stages[StIndex].ValidStages;
   enum ShaderKind ModuleStagekind = getShaderKindEnum(ShaderEnv);
 
-  // Ensure valid shader stage constraints are specified
-  if (ValidShaderKindMask == ShaderKind::Unknown) {
+  // Ensure valid shader stage properties are specified
+  if (ValidShaderKindMask == ShaderKind::removed) {
     report_fatal_error(
         StringRef(
             DXILVer.getAsString()
-                .append(": Unknown Target Shader Stage for DXIL operation - ")
+                .append(
+                    ": Unsupported Target Shader Stage for DXIL operation - ")
                 .append(getOpCodeName((OpCode)))),
         /*gen_crash_diag*/ false);
   }
 
-  // Validate the shader stage specified in target triple to be known
-  if (ModuleStagekind == ShaderKind::Unknown) {
-    report_fatal_error(StringRef(DXILVer.getAsString().append(
-                           ": DXIL Module created with Unspecifed or Unknown "
-                           "Target Shader Stage")),
-                       /*gen_crash_diag*/ false);
-  }
+  // Shader stage need not be validated since getShaderKindEnum() fails
+  // for unknown shader stage.
 
   // Verify the target shader stage is valid for the DXIL operation
   if (!(ValidShaderKindMask & ModuleStagekind)) {
