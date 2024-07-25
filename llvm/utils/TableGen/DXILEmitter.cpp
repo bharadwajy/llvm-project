@@ -91,6 +91,24 @@ static ParameterKind getParameterKind(const Record *R) {
   }
 }
 
+/// In-place sort TableGen records of class with a field
+///    Version dxil_version
+/// in the ascending version order.
+static void AscendingSortByVersion(std::vector<Record *>& Recs) {
+  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
+    unsigned RecAMaj =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecAMin =
+        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+    unsigned RecBMaj =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
+    unsigned RecBMin =
+        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
+
+    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
+  });
+}
+
 /// Construct an object using the DXIL Operation records specified
 /// in DXIL.td. This serves as the single source of reference of
 /// the information extracted from the specified Record R, for
@@ -170,22 +188,11 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
     OverloadParamIndex = OverloadParamIndices[0];
   }
 
-  // Get ovberload records
+  // Get overload records
   std::vector<Record *> Recs = R->getValueAsListOfDefs("overloads");
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
-    unsigned RecAMaj =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecAMin =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    unsigned RecBMaj =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecBMin =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-
-    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
-  });
+  AscendingSortByVersion(Recs);
 
   for (Record *CR : Recs) {
     OverloadRecs.push_back(CR);
@@ -203,18 +210,7 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   }
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
-    unsigned RecAMaj =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecAMin =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    unsigned RecBMaj =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecBMin =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-
-    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
-  });
+  AscendingSortByVersion(Recs);
 
   for (Record *CR : Recs) {
     StageRecs.push_back(CR);
@@ -224,18 +220,7 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   Recs = R->getValueAsListOfDefs("versioned_attributes");
 
   // Sort records in ascending order of DXIL version
-  std::sort(Recs.begin(), Recs.end(), [](Record *RecA, Record *RecB) {
-    unsigned RecAMaj =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecAMin =
-        RecA->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-    unsigned RecBMaj =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Major");
-    unsigned RecBMin =
-        RecB->getValueAsDef("dxil_version")->getValueAsInt("Minor");
-
-    return (VersionTuple(RecAMaj, RecAMin) < VersionTuple(RecBMaj, RecBMin));
-  });
+  AscendingSortByVersion(Recs);
 
   for (Record *CR : Recs) {
     AttrRecs.push_back(CR);
@@ -612,9 +597,6 @@ static void emitDXILOperationTable(std::vector<DXILOperationDesc> &Ops,
        << Op.OverloadParamIndex << ", " << Op.OpTypes.size() - 1 << ", "
        << Parameters.get(ParameterMap[Op.OpClass]) << " }";
     Prefix = ",\n";
-    OS << "\n// " << getOverloadMaskString(Op.OverloadRecs) << "\n"
-       << "// " << getStageMaskString(Op.StageRecs) << "\n"
-       << "// " << getAttributeMaskString(Op.AttrRecs) << "\n";
   }
   OS << "  };\n";
 
