@@ -256,33 +256,14 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
       ArgTys[0], ArrayRef<Type *>(&ArgTys[1], ArgTys.size() - 1), false);
 }
 
-static int getOverloadPropIndex(const OpCodeProperty *Prop,
-                                const VersionTuple DXILVer) {
-  // std::vector Prop->Overloads is in ascending order of DXIL Version
-  // Overloads of highest DXIL version that is not greater than DXILVer
-  // are the ones that are valid for DXILVer.
-  auto Size = Prop->Overloads.size();
+/// Get the index of the property from PropList valid for the
+/// highest DXIL version not greater than DXILVer.
+/// PropList is expected to be sorted in ascending order of DXIL version.
+template<typename T>
+static int getPropIndex(const std::vector<T> PropList, const VersionTuple DXILVer) {
+  auto Size = PropList.size();
   for (int I = Size - 1; I >= 0; I--) {
-    auto OL = Prop->Overloads[I];
-    if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <= DXILVer) {
-      return I;
-    }
-  }
-  report_fatal_error(
-      StringRef(DXILVer.getAsString().append(": Unknown DXIL Version")),
-      /*gen_crash_diag*/ false);
-
-  return -1;
-}
-
-static int getStagePropIndex(const OpCodeProperty *Prop,
-                             const VersionTuple DXILVer) {
-  // std::vector Prop->Stages is in ascending order of DXIL Version
-  // Overloads of highest DXIL version that is not greater than DXILVer
-  // are the ones that are valid for DXILVer.
-  auto Size = Prop->Stages.size();
-  for (int I = Size - 1; I >= 0; I--) {
-    auto OL = Prop->Stages[I];
+    auto OL = PropList[I];
     if (VersionTuple(OL.DXILVersion.Major, OL.DXILVersion.Minor) <= DXILVer) {
       return I;
     }
@@ -315,7 +296,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
   auto ShaderEnvStr = Triple(TTStr).getEnvironmentName();
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
-  int OlIndex = getOverloadPropIndex(Prop, DXILVer);
+  int OlIndex = getPropIndex(Prop->Overloads, DXILVer);
   uint16_t ValidTyMask = Prop->Overloads[OlIndex].ValidTys;
 
   OverloadKind Kind = getOverloadKind(OverloadTy);
@@ -340,7 +321,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
 
   // Perform necessary checks to ensure Opcode is valid in the targeted shader
   // kind
-  int StIndex = getStagePropIndex(Prop, DXILVer);
+  int StIndex = getPropIndex(Prop->Stages, DXILVer);
   uint16_t ValidShaderKindMask = Prop->Stages[StIndex].ValidStages;
   enum ShaderKind ModuleStagekind = getShaderKindEnum(ShaderEnv);
 
