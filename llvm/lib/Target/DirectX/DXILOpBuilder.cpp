@@ -259,8 +259,9 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
 /// Get index of the property from PropList valid for the most recent
 /// DXIL version not greater than DXILVer.
 /// PropList is expected to be sorted in ascending order of DXIL version.
-template<typename T>
-static int getPropIndex(const std::vector<T> PropList, const VersionTuple DXILVer) {
+template <typename T>
+static int getPropIndex(const std::vector<T> PropList,
+                        const VersionTuple DXILVer) {
   auto Size = PropList.size();
   for (int I = Size - 1; I >= 0; I--) {
     auto OL = PropList[I];
