@@ -276,12 +276,12 @@ class Overloads<Version ver, list<LLVMType> ols> {
   list<LLVMType> overload_types = ols;
 }
 
-class VersionedStages<Version ver, list<DXILShaderStage> st> {
+class Stages<Version ver, list<DXILShaderStage> st> {
   Version dxil_version = ver;
   list<DXILShaderStage> shader_stages = st;
 }
 
-class VersionedAttributes<Version ver = DXIL1_0, list<DXILAttribute> attrs> {
+class Attributes<Version ver = DXIL1_0, list<DXILAttribute> attrs> {
   Version dxil_version = ver;
   list<DXILAttribute> attributes = attrs;
 }
@@ -310,10 +310,10 @@ class DXILOp<int opcode, DXILOpClass opclass> {
   list<Overloads> overloads = [];
 
   // List of valid shader stages predicated by DXIL version
-  list<VersionedStages> stages;
+  list<Stages> stages;
 
   // Versioned attributes of operation
-  list<VersionedAttributes> versioned_attributes = [];
+  list<Attributes> versioned_attributes = [];
 }
 
 // Concrete definitions of DXIL Operations
@@ -324,8 +324,8 @@ def Abs :  DXILOp<6, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy, doubleTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
-  let versioned_attributes = [VersionedAttributes<DXIL1_0, [ReadNone]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
+  let versioned_attributes = [Attributes<DXIL1_0, [ReadNone]>];
 }
 
 def IsInf :  DXILOp<9, isSpecialFloat> {
@@ -334,7 +334,7 @@ def IsInf :  DXILOp<9, isSpecialFloat> {
   let arguments = [anyfloatTy];
   let result = i1Ty;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Cos :  DXILOp<12, unary> {
@@ -343,7 +343,7 @@ def Cos :  DXILOp<12, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Sin :  DXILOp<13, unary> {
@@ -352,7 +352,7 @@ def Sin :  DXILOp<13, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Tan :  DXILOp<14, unary> {
@@ -361,7 +361,7 @@ def Tan :  DXILOp<14, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def ACos :  DXILOp<15, unary> {
@@ -370,7 +370,7 @@ def ACos :  DXILOp<15, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def ASin :  DXILOp<16, unary> {
@@ -379,7 +379,7 @@ def ASin :  DXILOp<16, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def ATan :  DXILOp<17, unary> {
@@ -388,7 +388,7 @@ def ATan :  DXILOp<17, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def HCos :  DXILOp<18, unary> {
@@ -397,7 +397,7 @@ def HCos :  DXILOp<18, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def HSin :  DXILOp<19, unary> {
@@ -406,7 +406,7 @@ def HSin :  DXILOp<19, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def HTan :  DXILOp<20, unary> {
@@ -415,7 +415,7 @@ def HTan :  DXILOp<20, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Exp2 :  DXILOp<21, unary> {
@@ -425,7 +425,7 @@ def Exp2 :  DXILOp<21, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Frac :  DXILOp<22, unary> {
@@ -435,7 +435,7 @@ def Frac :  DXILOp<22, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Log2 :  DXILOp<23, unary> {
@@ -444,7 +444,7 @@ def Log2 :  DXILOp<23, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Sqrt :  DXILOp<24, unary> {
@@ -454,7 +454,7 @@ def Sqrt :  DXILOp<24, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def RSqrt :  DXILOp<25, unary> {
@@ -464,7 +464,7 @@ def RSqrt :  DXILOp<25, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Round :  DXILOp<26, unary> {
@@ -474,7 +474,7 @@ def Round :  DXILOp<26, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Floor :  DXILOp<27, unary> {
@@ -484,7 +484,7 @@ def Floor :  DXILOp<27, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Ceil :  DXILOp<28, unary> {
@@ -494,7 +494,7 @@ def Ceil :  DXILOp<28, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Trunc :  DXILOp<29, unary> {
@@ -503,7 +503,7 @@ def Trunc :  DXILOp<29, unary> {
   let arguments = [LLVMMatchType<0>];
   let result = overloadTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Rbits :  DXILOp<30, unary> {
@@ -513,7 +513,7 @@ def Rbits :  DXILOp<30, unary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def FMax :  DXILOp<35, binary> {
@@ -523,7 +523,7 @@ def FMax :  DXILOp<35, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [halfTy, floatTy, doubleTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def FMin :  DXILOp<36, binary> {
@@ -533,7 +533,7 @@ def FMin :  DXILOp<36, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [halfTy, floatTy, doubleTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def SMax :  DXILOp<37, binary> {
@@ -543,7 +543,7 @@ def SMax :  DXILOp<37, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def SMin :  DXILOp<38, binary> {
@@ -553,7 +553,7 @@ def SMin :  DXILOp<38, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def UMax :  DXILOp<39, binary> {
@@ -563,7 +563,7 @@ def UMax :  DXILOp<39, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def UMin :  DXILOp<40, binary> {
@@ -573,7 +573,7 @@ def UMin :  DXILOp<40, binary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def FMad :  DXILOp<46, tertiary> {
@@ -584,7 +584,7 @@ def FMad :  DXILOp<46, tertiary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [halfTy, floatTy, doubleTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def IMad :  DXILOp<48, tertiary> {
@@ -595,7 +595,7 @@ def IMad :  DXILOp<48, tertiary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def UMad :  DXILOp<49, tertiary> {
@@ -606,7 +606,7 @@ def UMad :  DXILOp<49, tertiary> {
   let result = overloadTy;
   let overloads =
       [Overloads<DXIL1_0, [i16Ty, i32Ty, i64Ty]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Dot2 :  DXILOp<54, dot2> {
@@ -616,7 +616,7 @@ def Dot2 :  DXILOp<54, dot2> {
   let arguments = !listsplat(anyfloatTy, 4);
   let result = anyfloatTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Dot3 :  DXILOp<55, dot3> {
@@ -626,7 +626,7 @@ def Dot3 :  DXILOp<55, dot3> {
   let arguments = !listsplat(anyfloatTy, 6);
   let result = anyfloatTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def Dot4 :  DXILOp<56, dot4> {
@@ -636,7 +636,7 @@ def Dot4 :  DXILOp<56, dot4> {
   let arguments = !listsplat(anyfloatTy, 8);
   let result = anyfloatTy;
   let overloads = [Overloads<DXIL1_0, [halfTy, floatTy]>];
-  let stages = [VersionedStages<DXIL1_0, [all_stages]>];
+  let stages = [Stages<DXIL1_0, [all_stages]>];
 }
 
 def ThreadId :  DXILOp<93, threadId> {
@@ -644,7 +644,7 @@ def ThreadId :  DXILOp<93, threadId> {
   let LLVMIntrinsic = int_dx_thread_id;
   let arguments = [i32Ty];
   let result = i32Ty;
-  let stages = [VersionedStages<DXIL1_0, [compute, mesh, amplification, node]>];
+  let stages = [Stages<DXIL1_0, [compute, mesh, amplification, node]>];
 }
 
 def GroupId :  DXILOp<94, groupId> {
@@ -652,7 +652,7 @@ def GroupId :  DXILOp<94, groupId> {
   let LLVMIntrinsic = int_dx_group_id;
   let arguments = [i32Ty];
   let result = i32Ty;
-  let stages = [VersionedStages<DXIL1_0, [compute, mesh, amplification, node]>];
+  let stages = [Stages<DXIL1_0, [compute, mesh, amplification, node]>];
 }
 
 def ThreadIdInGroup :  DXILOp<95, threadIdInGroup> {
@@ -660,7 +660,7 @@ def ThreadIdInGroup :  DXILOp<95, threadIdInGroup> {
   let LLVMIntrinsic = int_dx_thread_id_in_group;
   let arguments = [i32Ty];
   let result = i32Ty;
-  let stages = [VersionedStages<DXIL1_0, [compute, mesh, amplification, node]>];
+  let stages = [Stages<DXIL1_0, [compute, mesh, amplification, node]>];
 }
 
 def FlattenedThreadIdInGroup :  DXILOp<96, flattenedThreadIdInGroup> {
@@ -668,5 +668,5 @@ def FlattenedThreadIdInGroup :  DXILOp<96, flattenedThreadIdInGroup> {
             "group (SV_GroupIndex)";
   let LLVMIntrinsic = int_dx_flattened_thread_id_in_group;
   let result = i32Ty;
-  let stages = [VersionedStages<DXIL1_0, [compute, mesh, amplification, node]>];
+  let stages = [Stages<DXIL1_0, [compute, mesh, amplification, node]>];
 }
