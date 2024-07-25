@@ -30,7 +30,7 @@ foreach i = 0...8 in {
 defvar overloadTy = llvm_any_ty;
 
 // Type aliases for DXIL Op types to LLVM Types.
-// TODO: Defined DXIL Types independent of LLVM types
+// TODO: Define DXIL Types independent of LLVM types
 defvar i1Ty = llvm_i1_ty;
 defvar i8Ty = llvm_i8_ty;
 defvar i16Ty = llvm_i16_ty;
@@ -227,8 +227,8 @@ defset list<DXILOpClass> OpClasses = {
   def writeSamplerFeedbackGrad : DXILOpClass;
   def writeSamplerFeedbackLevel: DXILOpClass;
 
-  // This is a sentinel definition. Hence placed at the end here
-  // and not as part of the above alphabetically sorted valid definitions.
+  // This is a sentinel definition. Hence placed at the end here and
+  // not as part of the above alphabetically sorted valid definitions.
   // It is never used to construct the name of DXIL Op call name.
   // Additionally it is capitalized unlike all the others.
   def UnknownOpClass : DXILOpClass;

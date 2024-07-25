@@ -20,12 +20,10 @@
 #include "llvm/ADT/StringSet.h"
 #include "llvm/CodeGenTypes/MachineValueType.h"
 #include "llvm/Support/DXILABI.h"
-#include "llvm/Support/MathExtras.h"
 #include "llvm/Support/VersionTuple.h"
 #include "llvm/TableGen/Record.h"
 #include "llvm/TableGen/TableGenBackend.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -118,10 +116,6 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
 
   Doc = R->getValueAsString("Doc");
   SmallVector<Record *> ParamTypeRecs;
-  // std::vector<Record *> RetTys = R->getValueAsListOfDefs("result");
-  // for (auto Ty : RetTys) {
-  //  ParamTypeRecs.push_back(Ty);
-  // }
 
   ParamTypeRecs.push_back(R->getValueAsDef("result"));
 

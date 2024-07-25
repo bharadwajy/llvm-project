@@ -256,8 +256,8 @@ static FunctionType *getDXILOpFunctionType(const OpCodeProperty *Prop,
       ArgTys[0], ArrayRef<Type *>(&ArgTys[1], ArgTys.size() - 1), false);
 }
 
-/// Get the index of the property from PropList valid for the
-/// highest DXIL version not greater than DXILVer.
+/// Get index of the property from PropList valid for the most recent
+/// DXIL version not greater than DXILVer.
 /// PropList is expected to be sorted in ascending order of DXIL version.
 template<typename T>
 static int getPropIndex(const std::vector<T> PropList, const VersionTuple DXILVer) {

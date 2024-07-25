@@ -40,7 +40,6 @@ public:
   /// \return DXIL Op call constructed
   CallInst *createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
                              Type *OverloadTy, SmallVector<Value *> Args);
-
   Type *getOverloadTy(dxil::OpCode OpCode, FunctionType *FT);
   static const char *getOpCodeName(dxil::OpCode DXILOp);
 
