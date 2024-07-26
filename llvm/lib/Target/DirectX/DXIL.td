@@ -19,9 +19,7 @@ class Version<int major, int minor> {
   int Minor = minor;
 }
 
-// Valid Shader model version records
-
-// DXIL Version 1.0 - 1.8
+// Valid DXIL Version records
 foreach i = 0...8 in {
   def DXIL1_ #i : Version<1, i>;
 }

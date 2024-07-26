@@ -332,22 +332,23 @@ static int getPropIndex(const std::vector<T> PropList,
 namespace llvm {
 namespace dxil {
 
+// No extra checks on  TargetTripleStr need be performed to verify that the
+// Triple is well-formed or that the target is supported since these checks
+// would have been done at the time the module M is constructed in the earlier
+// stages of compilation.
+DXILOpBuilder::DXILOpBuilder(Module &M, IRBuilderBase &B)
+    : M(M), B(B), TargetTripleStr(M.getTargetTriple()) {}
+
 CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
                                           Type *OverloadTy,
                                           SmallVector<Value *> Args) {
 
-  std::string TTStr = M.getTargetTriple();
-  // No extra checks need be performed to verify that the Triple is
-  // well-formed or the target is supported since these checks would have
-  // been done at the time the module M is constructed in the earlier stages of
-  // compilation.
-  auto Major = Triple(TTStr).getDXILVersion().getMajor();
-  auto MinorOrErr = Triple(TTStr).getOSVersion().getMinor();
+  auto Major = Triple(TargetTripleStr).getDXILVersion().getMajor();
+  auto MinorOrErr = Triple(TargetTripleStr).getDXILVersion().getMinor();
   uint32_t Minor = MinorOrErr.has_value() ? *MinorOrErr : 0;
   VersionTuple DXILVer(Major, Minor);
   // Get Shader Stage Kind
-  Triple::EnvironmentType ShaderEnv = Triple(TTStr).getEnvironment();
-  auto ShaderEnvStr = Triple(TTStr).getEnvironmentName();
+  Triple::EnvironmentType ShaderEnv = Triple(TargetTripleStr).getEnvironment();
 
   const OpCodeProperty *Prop = getOpCodeProperty(OpCode);
   int OlIndex = getPropIndex(Prop->Overloads, DXILVer);
@@ -395,6 +396,7 @@ CallInst *DXILOpBuilder::createDXILOpCall(dxil::OpCode OpCode, Type *ReturnTy,
 
   // Verify the target shader stage is valid for the DXIL operation
   if (!(ValidShaderKindMask & ModuleStagekind)) {
+    auto ShaderEnvStr = Triple(TargetTripleStr).getEnvironmentName();
     report_fatal_error(
         StringRef(std::string(ShaderEnvStr)
                       .append(" : Invalid Shader Stage for DXIL operation - ")
