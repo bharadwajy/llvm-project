@@ -132,16 +132,12 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
   // the comment before the definition of class LLVMMatchType in
   // llvm/IR/Intrinsics.td
   SmallVector<int> OverloadParamIndices;
-  for (unsigned I = 0; I < ParamTypeRecsSize; I++) {
-    auto TR = ParamTypeRecs[I];
+  for (unsigned i = 0; i < ParamTypeRecsSize; i++) {
+    auto TR = ParamTypeRecs[i];
     // Track operation parameter indices of any overload types
     auto isAny = TR->getValueAsInt("isAny");
     if (isAny == 1) {
-      // It is expected that all overload types in a DXIL Op
-      // are of the same type. Hence, OverloadParamIndices will have only one
-      // element. This implies we do not need a vector. However, until more
-      // (all?) DXIL Ops are added in DXIL.td, a vector is being used to flag
-      // cases this assumption would not hold.
+      // All overload types in a DXIL Op are required to be of the same type.
       if (!OverloadParamIndices.empty()) {
         bool knownType = true;
         // Ensure that the same overload type registered earlier is being used
@@ -154,7 +150,7 @@ DXILOperationDesc::DXILOperationDesc(const Record *R) {
         assert(knownType && "Specification of multiple differing overload "
                             "parameter types not yet supported");
       } else {
-        OverloadParamIndices.push_back(I);
+        OverloadParamIndices.push_back(i);
       }
     }
     // Populate OpTypes array according to the type specification
