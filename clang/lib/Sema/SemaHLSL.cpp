@@ -356,7 +356,7 @@ static bool isLegalTypeForHLSLSV_DispatchThreadID(QualType T) {
   return true;
 }
 
-void SemaHLSL::handleSV_DispatchThreadIDAttr(Decl *D, const ParsedAttr &AL) {  
+void SemaHLSL::handleSV_DispatchThreadIDAttr(Decl *D, const ParsedAttr &AL) {
   auto *VD = cast<ValueDecl>(D);
   if (!isLegalTypeForHLSLSV_DispatchThreadID(VD->getType())) {
     Diag(AL.getLoc(), diag::err_hlsl_attr_invalid_type)
@@ -1053,6 +1053,7 @@ bool SemaHLSL::CheckBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
     break;
   }
   case Builtin::BI__builtin_hlsl_elementwise_rsqrt:
+  case Builtin::BI__builtin_hlsl_elementwise_saturate:
   case Builtin::BI__builtin_hlsl_elementwise_frac: {
     if (CheckFloatOrHalfRepresentations(&SemaRef, TheCall))
       return true;

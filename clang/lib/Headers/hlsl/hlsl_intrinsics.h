@@ -1501,6 +1501,36 @@ _HLSL_BUILTIN_ALIAS(__builtin_elementwise_roundeven)
 float4 round(float4);
 
 //===----------------------------------------------------------------------===//
+// saturate builtins
+//===----------------------------------------------------------------------===//
+
+/// \fn T saturate(T Val)
+/// \brief Returns input value, \a Val, clamped within the range of 0.0f to 1.0f.
+/// \param Val The input value.
+
+_HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+half saturate(half);
+_HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+half2 saturate(half2);
+_HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+half3 saturate(half3);
+_HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+half4 saturate(half4);
+
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+float saturate(float);
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+float2 saturate(float2);
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+float3 saturate(float3);
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+float4 saturate(float4);
+
+//===----------------------------------------------------------------------===//
 // sin builtins
 //===----------------------------------------------------------------------===//
 
