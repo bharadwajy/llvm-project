@@ -4732,7 +4732,7 @@ def HLSLRSqrt : LangBuiltin<"HLSL_LANG"> {
 }
 
 def HLSLSaturate : LangBuiltin<"HLSL_LANG"> {
-  let Spellings = ["__builtin_hlsl_elementwise_saturate"];
+  let Spellings = ["__builtin_hlsl_saturate"];
   let Attributes = [NoThrow, Const];
   let Prototype = "void(...)";
 }

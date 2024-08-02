@@ -1509,34 +1509,34 @@ float4 round(float4);
 /// \param Val The input value.
 
 _HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 half saturate(half);
 _HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 half2 saturate(half2);
 _HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 half3 saturate(half3);
 _HLSL_16BIT_AVAILABILITY(shadermodel, 6.2)
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 half4 saturate(half4);
 
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 float saturate(float);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 float2 saturate(float2);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 float3 saturate(float3);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 float4 saturate(float4);
 
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 double saturate(double);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 double2 saturate(double2);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 double3 saturate(double3);
-_HLSL_BUILTIN_ALIAS(__builtin_hlsl_elementwise_saturate)
+_HLSL_BUILTIN_ALIAS(__builtin_hlsl_saturate)
 double4 saturate(double4);
 
 //===----------------------------------------------------------------------===//

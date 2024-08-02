@@ -44,6 +44,7 @@ static bool isIntrinsicExpansion(Function &F) {
   case Intrinsic::dx_lerp:
   case Intrinsic::dx_sdot:
   case Intrinsic::dx_udot:
+  case Intrinsic::dx_saturate:
     return true;
   }
   return false;
@@ -261,6 +262,17 @@ static bool expandClampIntrinsic(CallInst *Orig, Intrinsic::ID ClampIntrinsic) {
   return true;
 }
 
+static bool expandSaturateIntrinsic(CallInst *Orig) {
+  Value *RetOp = Orig->getOperand(0);
+  Type *RetTy = RetOp->getType();
+  Value *Op = Orig->getOperand(1);
+  assert(RetTy == Op->getType() && "Unexpected differint operand and return types of call to saturate");
+  if (!RetTy->isVectorTy()) {
+    return true;
+  }
+  return true;
+}
+
 static bool expandIntrinsic(Function &F, CallInst *Orig) {
   switch (F.getIntrinsicID()) {
   case Intrinsic::abs:
@@ -283,6 +295,8 @@ static bool expandIntrinsic(Function &F, CallInst *Orig) {
   case Intrinsic::dx_sdot:
   case Intrinsic::dx_udot:
     return expandIntegerDot(Orig, F.getIntrinsicID());
+  case Intrinsic::dx_saturate:
+    return expandSaturateIntrinsic(Orig);
   }
   return false;
 }

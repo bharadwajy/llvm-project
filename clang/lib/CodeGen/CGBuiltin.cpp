@@ -18531,7 +18531,7 @@ case Builtin::BI__builtin_hlsl_elementwise_isinf: {
         /*ReturnType=*/Op0->getType(), CGM.getHLSLRuntime().getRsqrtIntrinsic(),
         ArrayRef<Value *>{Op0}, nullptr, "hlsl.rsqrt");
   }
-  case Builtin::BI__builtin_hlsl_elementwise_saturate: {
+  case Builtin::BI__builtin_hlsl_saturate: {
     Value *Op0 = EmitScalarExpr(E->getArg(0));
     if (!E->getArg(0)->getType()->hasFloatingRepresentation())
       llvm_unreachable("saturate operand must have a float representation");

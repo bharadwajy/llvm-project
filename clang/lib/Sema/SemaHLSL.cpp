@@ -1053,7 +1053,7 @@ bool SemaHLSL::CheckBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
     break;
   }
   case Builtin::BI__builtin_hlsl_elementwise_rsqrt:
-  case Builtin::BI__builtin_hlsl_elementwise_saturate:
+  case Builtin::BI__builtin_hlsl_saturate:
   case Builtin::BI__builtin_hlsl_elementwise_frac: {
     if (CheckFloatOrHalfRepresentations(&SemaRef, TheCall))
       return true;
