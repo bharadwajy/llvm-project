@@ -131,6 +131,21 @@ void ModuleShaderFlags::initialize(Module &M, DXILResourceTypeMap &DRTM) {
       // Merge SCCSF with that of F
       FunctionFlags[F].merge(SCCSF);
   }
+
+  // Set shader flags based on Module properties
+  SmallVector<llvm::Module::ModuleFlagEntry> FlagEntries;
+  M.getModuleFlagsMetadata(FlagEntries);
+  for (const auto &Flag : FlagEntries) {
+    if (Flag.Behavior != Module::ModFlagBehavior::Override)
+      continue;
+    if (Flag.Key->getString().compare("dx.disable_optimizations") == 0) {
+      const auto *V = mdconst::extract<llvm::ConstantInt>(Flag.Val);
+      if (V->isOne()) {
+        CombinedSFMask.DisableOptimizations = true;
+        break;
+      }
+    }
+  }
 }
 
 void ComputedShaderFlags::print(raw_ostream &OS) const {
