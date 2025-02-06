@@ -39,6 +39,13 @@ static ModuleMetadataInfo collectMetadataInfo(Module &M) {
 
   // For all HLSL Shader functions
   for (auto &F : M.functions()) {
+    // Disableing optimization sets optnone attribute for all module functions
+    // during compilation to library shaders and sets only entry functions are
+    // during compilation to library shaders.
+
+    MMDAI.DisableOptimizations |=
+        F.hasFnAttribute(llvm::Attribute::OptimizeNone);
+
     if (!F.hasFnAttribute("hlsl.shader"))
       continue;
 
@@ -68,6 +75,7 @@ static ModuleMetadataInfo collectMetadataInfo(Module &M) {
     }
     MMDAI.EntryPropertyVec.push_back(EFP);
   }
+
   return MMDAI;
 }
 
